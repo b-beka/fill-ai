@@ -37,6 +37,7 @@ class Lesson(Base):
         nullable=False,
     )
     status: Mapped[str] = mapped_column(Text, nullable=False, default="created")
+    visibility_mode: Mapped[str] = mapped_column(String(20), default="live", server_default="live", nullable=False)
     expected_terms: Mapped[list[str]] = mapped_column(ARRAY(Text), default=list)
     roi: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     livekit_room: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -58,6 +59,7 @@ class Lesson(Base):
     summary = relationship("LessonSummary", back_populates="lesson", uselist=False, cascade="all, delete-orphan")
     quizzes = relationship("Quiz", back_populates="lesson", cascade="all, delete-orphan")
     reports = relationship("Report", back_populates="lesson", cascade="all, delete-orphan")
+    slides = relationship("LessonSlide", back_populates="lesson", cascade="all, delete-orphan")
 
 
 class LessonEvent(Base):
