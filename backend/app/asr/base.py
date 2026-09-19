@@ -10,6 +10,7 @@ class AsrSegment(BaseModel):
     speaker: str | None = None
     confidence: float | None = None
     lang: str | None = None
+    words: list[dict] | None = None
 
 
 class AsrEvent(BaseModel):

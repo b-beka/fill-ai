@@ -20,6 +20,7 @@ class TranscriptNormalizer:
     def __init__(self, lesson_id: uuid.UUID | str):
         self.lesson_id = uuid.UUID(str(lesson_id))
         self.buffer_words: list[str] = []
+        self.word_timings: list[dict[str, Any]] = []
         self.segment_start_ms: int | None = None
         self.segment_end_ms: int | None = None
         self.current_speaker: str | None = None
@@ -66,6 +67,10 @@ class TranscriptNormalizer:
             self._start_new_segment(seg)
         else:
             self.buffer_words.append(seg.text)
+            if seg.words:
+                self.word_timings.extend(seg.words)
+            else:
+                self.word_timings.append({"word": seg.text, "start_ms": seg.start_ms, "end_ms": seg.end_ms})
             self.segment_end_ms = seg.end_ms
             self.confidence_sum += (seg.confidence or 0.9)
             self.token_count += 1
@@ -79,6 +84,10 @@ class TranscriptNormalizer:
 
     def _start_new_segment(self, seg: AsrSegment) -> None:
         self.buffer_words = [seg.text]
+        if seg.words:
+            self.word_timings = list(seg.words)
+        else:
+            self.word_timings = [{"word": seg.text, "start_ms": seg.start_ms, "end_ms": seg.end_ms}]
         self.segment_start_ms = seg.start_ms
         self.segment_end_ms = seg.end_ms
         self.current_speaker = seg.speaker
@@ -111,6 +120,7 @@ class TranscriptNormalizer:
             speaker=self.current_speaker,
             confidence=avg_confidence,
             lang=self.current_lang,
+            words=list(self.word_timings) if self.word_timings else None,
         )
         db.add(segment)
         await db.flush()
@@ -122,6 +132,7 @@ class TranscriptNormalizer:
             "end_ms": self.segment_end_ms,
             "text": text_content,
             "speaker": self.current_speaker,
+            "words": list(self.word_timings) if self.word_timings else None,
         }
         published_event = await emit_persistent_event(
             session=db,
@@ -133,6 +144,7 @@ class TranscriptNormalizer:
 
         # Reset buffer
         self.buffer_words = []
+        self.word_timings = []
         self.segment_start_ms = None
         self.segment_end_ms = None
         self.confidence_sum = 0.0
