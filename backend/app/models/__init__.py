@@ -7,6 +7,7 @@ from app.models.note import NoteBlock, LessonSummary
 from app.models.quiz import Quiz, QuizQuestion, Attempt, Answer
 from app.models.report import Report
 from app.models.ai import AiCall
+from app.models.slide import LessonSlide
 
 __all__ = [
     "Base",
@@ -23,4 +24,5 @@ __all__ = [
     "Answer",
     "Report",
     "AiCall",
+    "LessonSlide",
 ]
