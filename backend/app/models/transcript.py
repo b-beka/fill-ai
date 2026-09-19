@@ -1,6 +1,6 @@
 import uuid
 from sqlalchemy import Float, ForeignKey, Index, Integer, Text
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base
 
@@ -18,6 +18,7 @@ class TranscriptSegment(Base):
     speaker: Mapped[str | None] = mapped_column(Text, nullable=True)
     confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
     lang: Mapped[str | None] = mapped_column(Text, nullable=True)
+    words: Mapped[list[dict] | None] = mapped_column(JSONB, nullable=True)
 
     lesson = relationship("Lesson", back_populates="transcript_segments")
 
