@@ -10,6 +10,7 @@ from app.ai.schemas import NoteBlockOutput
 from app.core.events import emit_persistent_event
 from app.core.logging import get_logger
 from app.core.s3 import resolve_media_url
+from app.ai.faithfulness import verify_block_faithfulness
 from app.models.frame import Frame
 from app.models.lesson import Lesson
 from app.models.note import NoteBlock
@@ -138,8 +139,19 @@ async def generate_note_block_for_window(
         else:
             logger.warning("filtered_invalid_frame_id", invalid_id=str(ref.frame_id))
 
+    # 6.5. Second-pass Faithfulness Verification (Grounding Check)
+    slide_text = "\n".join([f.ocr_markdown for f in frames if f.ocr_markdown])
+    output = await verify_block_faithfulness(
+        output=output,
+        transcript_text=transcript_text,
+        slide_text=slide_text if slide_text else None,
+        provider=provider,
+        lesson_id=lesson_uuid,
+    )
+
     # 7. Persist NoteBlock to DB
     block_id = uuid.uuid4()
+    initial_status = "pending_review" if getattr(lesson, "visibility_mode", "live") == "moderated" else "approved"
     note_block = NoteBlock(
         id=block_id,
         lesson_id=lesson_uuid,
@@ -150,6 +162,7 @@ async def generate_note_block_for_window(
         title=output.title,
         summary=output.summary,
         body_md=output.body_md,
+        status=initial_status,
         key_terms=[t.model_dump() for t in output.key_terms],
         callouts=[c.model_dump() for c in output.callouts],
         frame_refs=cleaned_frame_refs,
@@ -178,6 +191,7 @@ async def generate_note_block_for_window(
         "title": note_block.title,
         "summary": note_block.summary,
         "body_md": note_block.body_md,
+        "status": initial_status,
         "key_terms": note_block.key_terms,
         "callouts": note_block.callouts,
         "frame_refs": note_block.frame_refs,
