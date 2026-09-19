@@ -9,6 +9,7 @@ class LessonCreateRequest(BaseModel):
     subject: str | None = Field(None, max_length=100)
     language: Literal["ru", "kk", "en"]
     source: Literal["live", "upload"]
+    visibility_mode: Literal["live", "moderated"] = "live"
     group_id: uuid.UUID | None = None
     expected_terms: list[str] = Field(default_factory=list)
     roi: dict | None = None
@@ -28,6 +29,7 @@ class LessonResponse(BaseModel):
     language: str
     source: str
     status: str
+    visibility_mode: str = "live"
     expected_terms: list[str] = []
     roi: dict | None = None
     livekit_room: str | None = None
@@ -38,6 +40,21 @@ class LessonResponse(BaseModel):
     created_at: datetime
     livekit_url: str | None = None
     teacher_token: str | None = None
+
+    model_config = {"from_attributes": True}
+
+
+class SlideResponse(BaseModel):
+    id: uuid.UUID
+    lesson_id: uuid.UUID
+    slide_idx: int
+    s3_key: str
+    url: str | None = None
+    phash: str
+    extracted_text: str = ""
+    terms: list[str] = []
+    width: int = 1920
+    height: int = 1080
 
     model_config = {"from_attributes": True}
 
