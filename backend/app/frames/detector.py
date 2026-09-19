@@ -17,6 +17,9 @@ class CandidateFrame:
     phash: str
     width: int
     height: int
+    matched_slide_idx: int | None = None
+    matched_slide_s3_key: str | None = None
+    matched_slide_text: str | None = None
 
 
 class SlideBoardDetector:
@@ -32,6 +35,7 @@ class SlideBoardDetector:
     ):
         self.roi = roi
         self.dedup = deduplicator or FrameDeduplicator()
+        self.preloaded_slides: list[dict[str, Any]] = []
 
         # Thresholds
         self.change_diff_threshold = settings.CHANGE_DIFF_THRESHOLD
@@ -52,6 +56,24 @@ class SlideBoardDetector:
         self.stable_timer_sec = 0.0
         self.accepted_count = 0
         self.window_accepted_count = 0
+
+    def set_presentation_slides(self, slides: list[dict[str, Any]]) -> None:
+        """Sets pre-rendered presentation slides for zero-cost pHash matching."""
+        self.preloaded_slides = slides
+
+    def find_matching_slide(self, current_phash: imagehash.ImageHash) -> dict[str, Any] | None:
+        """Finds matching slide if Hamming distance <= 4."""
+        for slide in self.preloaded_slides:
+            p_str = slide.get("phash")
+            if not p_str:
+                continue
+            try:
+                slide_hash = imagehash.hex_to_hash(str(p_str))
+                if abs(current_phash - slide_hash) <= 4:
+                    return slide
+            except Exception:
+                continue
+        return None
 
     def apply_roi(self, img_rgb: np.ndarray) -> np.ndarray:
         if not self.roi or len(self.roi) != 4:
@@ -116,6 +138,27 @@ class SlideBoardDetector:
 
         self.prev_gray_small = gray_small
         self.prev_phash = current_phash
+
+        # Zero-cost matching against preloaded presentation slides
+        matched_slide = self.find_matching_slide(current_phash)
+        if matched_slide is not None:
+            time_since_last_accepted = (t_ms - self.last_accepted_t_ms) / 1000.0
+            if time_since_last_accepted >= self.min_frame_gap_sec and not self.dedup.is_duplicate(current_phash, threshold=4):
+                self.dedup.add(current_phash)
+                self.last_accepted_gray = gray_small
+                self.last_accepted_t_ms = t_ms
+                self.accepted_count += 1
+                self.window_accepted_count += 1
+                return CandidateFrame(
+                    t_ms=t_ms,
+                    image_rgb=cropped_rgb,
+                    phash=str(current_phash),
+                    width=w,
+                    height=h,
+                    matched_slide_idx=matched_slide.get("slide_idx"),
+                    matched_slide_s3_key=matched_slide.get("s3_key"),
+                    matched_slide_text=matched_slide.get("extracted_text") or matched_slide.get("text"),
+                )
 
         # 4. State transitions: changing vs stable
         is_changing_sample = (diff > self.change_diff_threshold) or (phash_dist > 6)
