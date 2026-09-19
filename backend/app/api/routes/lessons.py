@@ -2,20 +2,23 @@ from datetime import datetime, timezone
 import json
 from typing import Any
 import uuid
-from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException, Query, Response, status
+from fastapi import APIRouter, BackgroundTasks, Depends, File, Header, HTTPException, Query, Response, UploadFile, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 import redis.asyncio as aioredis
-from app.api.deps import enforce_rate_limit, get_db, get_lesson_for_user, get_redis
+from app.api.deps import enforce_rate_limit, get_current_user, get_db, get_lesson_for_user, get_redis
 from app.api.schemas.lesson import (
     BlockUpdateRequest,
     LessonCreateRequest,
     LessonResponse,
     LessonStateResponse,
     ProcessLessonRequest,
+    SlideResponse,
     UploadUrlRequest,
     UploadUrlResponse,
 )
+from app.frames.presentation import process_presentation_pdf
+from app.models.slide import LessonSlide
 from app.core.config import get_settings
 from app.core.events import emit_persistent_event
 from app.core.logging import get_logger
@@ -69,6 +72,7 @@ def _format_lesson_response(lesson: Lesson, teacher_token: str | None = None) ->
         language=lesson.language,
         source=lesson.source,
         status=lesson.status,
+        visibility_mode=lesson.visibility_mode if isinstance(getattr(lesson, "visibility_mode", None), str) else "live",
         expected_terms=lesson.expected_terms,
         roi=lesson.roi,
         livekit_room=lesson.livekit_room,
@@ -128,6 +132,7 @@ async def create_lesson(
         language=payload.language,
         source=payload.source,
         status="created",
+        visibility_mode=payload.visibility_mode,
         expected_terms=payload.expected_terms,
         roi=payload.roi,
         livekit_room=livekit_room,
@@ -143,7 +148,7 @@ async def create_lesson(
         session=db,
         lesson_id=lesson_id,
         event_type="lesson.status",
-        data={"status": "created"},
+        data={"status": "created", "visibility_mode": payload.visibility_mode},
         publish_to_redis_now=True,
     )
 
@@ -386,6 +391,136 @@ async def process_uploaded_lesson(
     return _format_lesson_response(lesson)
 
 
+@router.post(
+    "/{lesson_id}/materials",
+    response_model=list[SlideResponse],
+    dependencies=[Depends(enforce_rate_limit)],
+)
+async def upload_lesson_materials(
+    lesson_id: uuid.UUID,
+    file: UploadFile = File(...),
+    lesson: Lesson = Depends(get_lesson_for_user),
+    db: AsyncSession = Depends(get_db),
+    user: CurrentUser = Depends(require_role("teacher", "admin")),
+) -> Any:
+    """
+    Uploads presentation materials (PDF), renders clean high-res slides into WebP,
+    calculates pHash for zero-cost stream matching, and warms up ASR expected_terms.
+    """
+    filename = file.filename or "presentation.pdf"
+    if not filename.lower().endswith(".pdf"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"code": "unsupported_format", "message": "Only PDF presentation files are currently supported"},
+        )
+
+    file_bytes = await file.read()
+    if len(file_bytes) == 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"code": "empty_file", "message": "Uploaded file is empty"},
+        )
+
+    try:
+        slides, extracted_terms = await process_presentation_pdf(
+            file_bytes=file_bytes,
+            lesson_id=lesson.id,
+        )
+    except Exception as e:
+        logger.error("presentation_processing_failed", error=str(e), lesson_id=str(lesson.id))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"code": "presentation_error", "message": f"Failed to parse presentation: {str(e)}"},
+        )
+
+    # Save slides to database
+    db.add_all(slides)
+
+    # Accumulate terms into lesson.expected_terms
+    current_terms = list(lesson.expected_terms or [])
+    seen = {t.lower() for t in current_terms}
+    for t in extracted_terms:
+        if t.lower() not in seen:
+            seen.add(t.lower())
+            current_terms.append(t)
+    lesson.expected_terms = current_terms
+    await db.flush()
+
+    # Emit lesson.materials.ready event
+    await emit_persistent_event(
+        session=db,
+        lesson_id=lesson.id,
+        event_type="lesson.materials.ready",
+        data={"total_slides": len(slides), "extracted_terms_count": len(extracted_terms)},
+        publish_to_redis_now=True,
+    )
+
+    await db.commit()
+
+    return [
+        SlideResponse(
+            id=s.id,
+            lesson_id=s.lesson_id,
+            slide_idx=s.slide_idx,
+            s3_key=s.s3_key,
+            url=resolve_media_url(s.s3_key),
+            phash=s.phash,
+            extracted_text=s.extracted_text,
+            terms=s.terms or [],
+            width=s.width,
+            height=s.height,
+        )
+        for s in slides
+    ]
+
+
+@router.get(
+    "/{lesson_id}/slides",
+    response_model=list[SlideResponse],
+    dependencies=[Depends(enforce_rate_limit)],
+)
+async def get_lesson_slides(
+    lesson: Lesson = Depends(get_lesson_for_user),
+    db: AsyncSession = Depends(get_db),
+) -> Any:
+    """Returns all pre-rendered slides for a lesson."""
+    stmt = select(LessonSlide).where(LessonSlide.lesson_id == lesson.id).order_by(LessonSlide.slide_idx.asc())
+    res = await db.execute(stmt)
+    slides = res.scalars().all()
+    return [
+        SlideResponse(
+            id=s.id,
+            lesson_id=s.lesson_id,
+            slide_idx=s.slide_idx,
+            s3_key=s.s3_key,
+            url=resolve_media_url(s.s3_key),
+            phash=s.phash,
+            extracted_text=s.extracted_text,
+            terms=s.terms or [],
+            width=s.width,
+            height=s.height,
+        )
+        for s in slides
+    ]
+
+
+@router.get(
+    "/{lesson_id}/recording",
+    dependencies=[Depends(enforce_rate_limit)],
+)
+async def get_lesson_recording(
+    lesson: Lesson = Depends(get_lesson_for_user),
+) -> Any:
+    """Returns presigned URL for the lesson audio/video recording (for synchronized playback)."""
+    from app.media.egress import get_recording_playback_url
+    playback_url = await get_recording_playback_url(lesson.id)
+    return {
+        "lesson_id": str(lesson.id),
+        "recording_url": playback_url,
+        "format": "mp4",
+    }
+
+
 @router.get(
     "/{lesson_id}/state",
     response_model=LessonStateResponse,
@@ -396,10 +531,13 @@ async def get_lesson_state(
     transcript_after_ms: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=500),
     db: AsyncSession = Depends(get_db),
+    user: CurrentUser = Depends(get_current_user),
 ) -> Any:
     """Returns a complete snapshot of the lesson state for clients."""
     # 1. Blocks
     b_stmt = select(NoteBlock).where(NoteBlock.lesson_id == lesson.id).order_by(NoteBlock.position.asc())
+    if getattr(lesson, "visibility_mode", "live") == "moderated" and user.role == "student":
+        b_stmt = b_stmt.where(NoteBlock.status == "approved")
     b_res = await db.execute(b_stmt)
     blocks = [
         {
@@ -408,6 +546,7 @@ async def get_lesson_state(
             "title": b.title,
             "summary": b.summary,
             "body_md": b.body_md,
+            "status": getattr(b, "status", "approved"),
             "key_terms": b.key_terms,
             "callouts": b.callouts,
             "frame_refs": b.frame_refs,
@@ -471,6 +610,7 @@ async def get_lesson_state(
             "end_ms": t.end_ms,
             "text": t.text,
             "speaker": t.speaker,
+            "words": getattr(t, "words", None),
         }
         for t in t_res.scalars().all()
     ]
@@ -540,20 +680,69 @@ async def update_note_block(
     return event_payload
 
 
+@router.post(
+    "/{lesson_id}/blocks/{block_id}/approve",
+    dependencies=[Depends(enforce_rate_limit)],
+)
+async def approve_note_block(
+    block_id: uuid.UUID,
+    lesson: Lesson = Depends(get_lesson_for_user),
+    db: AsyncSession = Depends(get_db),
+    user: CurrentUser = Depends(require_role("teacher", "admin")),
+) -> Any:
+    """Approves a note block in moderated mode, making it visible to students."""
+    block = await db.get(NoteBlock, block_id)
+    if not block or block.lesson_id != lesson.id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"code": "block_not_found", "message": "Note block not found"},
+        )
+
+    block.status = "approved"
+    await db.flush()
+
+    event_payload = {
+        "block_id": str(block.id),
+        "position": block.position,
+        "title": block.title,
+        "summary": block.summary,
+        "body_md": block.body_md,
+        "status": "approved",
+        "key_terms": block.key_terms,
+        "callouts": block.callouts,
+        "frame_refs": block.frame_refs,
+        "uncertain": block.uncertain,
+        "version": block.version,
+        "edited_by_teacher": block.edited_by_teacher,
+    }
+
+    await emit_persistent_event(
+        session=db,
+        lesson_id=lesson.id,
+        event_type="note.block.approved",
+        data=event_payload,
+        publish_to_redis_now=True,
+    )
+
+    await db.commit()
+    await db.refresh(block)
+    return event_payload
+
+
 @router.get(
     "/{lesson_id}/export",
     dependencies=[Depends(enforce_rate_limit)],
 )
-async def export_lesson_markdown(
+async def export_lesson(
     lesson: Lesson = Depends(get_lesson_for_user),
     format: str = Query("md"),
     db: AsyncSession = Depends(get_db),
 ) -> Response:
-    """Exports compiled lesson notes into clean Markdown format."""
-    if format != "md":
+    """Exports compiled lesson notes into Markdown or Anki TSV format."""
+    if format not in ("md", "anki", "anki_tsv"):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail={"code": "unsupported_format", "message": "Only 'md' format is supported"},
+            detail={"code": "unsupported_format", "message": "Supported formats: 'md', 'anki', 'anki_tsv'"},
         )
 
     # Fetch blocks
@@ -565,6 +754,41 @@ async def export_lesson_markdown(
     s_stmt = select(LessonSummary).where(LessonSummary.lesson_id == lesson.id)
     s_res = await db.execute(s_stmt)
     summary = s_res.scalar_one_or_none()
+
+    if format in ("anki", "anki_tsv"):
+        tsv_lines = ["#separator:tab", "#html:true", "Front\tBack"]
+        seen_terms = set()
+
+        # 1. From glossary
+        if summary and summary.glossary:
+            for item in summary.glossary:
+                term = str(item.get("term", "")).strip()
+                defn = str(item.get("definition", "")).strip()
+                if term and term.lower() not in seen_terms:
+                    seen_terms.add(term.lower())
+                    term_clean = term.replace("\t", " ").replace("\n", " ")
+                    defn_clean = defn.replace("\t", " ").replace("\n", "<br>")
+                    tsv_lines.append(f"{term_clean}\t{defn_clean}")
+
+        # 2. From block key terms
+        for block in blocks:
+            if block.key_terms:
+                for item in block.key_terms:
+                    term = str(item.get("term", "")).strip()
+                    defn = str(item.get("definition", "")).strip()
+                    if term and term.lower() not in seen_terms:
+                        seen_terms.add(term.lower())
+                        term_clean = term.replace("\t", " ").replace("\n", " ")
+                        defn_clean = defn.replace("\t", " ").replace("\n", "<br>")
+                        defn_clean += f"<br><small><i>(Тема: {block.title})</i></small>"
+                        tsv_lines.append(f"{term_clean}\t{defn_clean}")
+
+        tsv_content = "\n".join(tsv_lines)
+        return Response(
+            content=tsv_content,
+            media_type="text/tab-separated-values; charset=utf-8",
+            headers={"Content-Disposition": f'attachment; filename="lesson_{lesson.id}_anki.tsv"'},
+        )
 
     lines = [f"# {lesson.title}\n"]
     if lesson.subject:
