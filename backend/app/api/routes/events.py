@@ -156,8 +156,11 @@ async def stream_lesson_events(
             events_res = await db.execute(events_stmt)
             for db_event in events_res.scalars().all():
                 # Filter restricted events for students (Section 10.1 & 10.3)
-                if user.role == "student" and db_event.type in ("report.ready", "quiz.ready"):
-                    continue
+                if user.role == "student":
+                    if db_event.type in ("report.ready", "quiz.ready"):
+                        continue
+                    if db_event.type == "note.block.created" and db_event.payload.get("status") == "pending_review":
+                        continue
 
                 last_streamed_seq = max(last_streamed_seq, db_event.seq)
                 yield {
@@ -187,8 +190,12 @@ async def stream_lesson_events(
                         seq = event_payload.get("seq")
 
                         # Filter restricted events for students
-                        if user.role == "student" and event_type in ("report.ready", "quiz.ready"):
-                            continue
+                        if user.role == "student":
+                            if event_type in ("report.ready", "quiz.ready"):
+                                continue
+                            payload_data = event_payload.get("data", event_payload)
+                            if event_type == "note.block.created" and payload_data.get("status") == "pending_review":
+                                continue
 
                         # Deduplicate against catch-up DB events
                         if seq is not None:
