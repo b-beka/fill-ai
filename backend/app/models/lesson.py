@@ -60,6 +60,7 @@ class Lesson(Base):
     quizzes = relationship("Quiz", back_populates="lesson", cascade="all, delete-orphan")
     reports = relationship("Report", back_populates="lesson", cascade="all, delete-orphan")
     slides = relationship("LessonSlide", back_populates="lesson", cascade="all, delete-orphan")
+    live_tasks = relationship("LiveTask", back_populates="lesson", cascade="all, delete-orphan")
 
 
 class LessonEvent(Base):

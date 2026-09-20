@@ -8,6 +8,7 @@ from app.models.quiz import Quiz, QuizQuestion, Attempt, Answer
 from app.models.report import Report
 from app.models.ai import AiCall
 from app.models.slide import LessonSlide
+from app.models.live_task import LiveTask, LiveTaskResponse
 
 __all__ = [
     "Base",
@@ -25,4 +26,6 @@ __all__ = [
     "Report",
     "AiCall",
     "LessonSlide",
+    "LiveTask",
+    "LiveTaskResponse",
 ]
