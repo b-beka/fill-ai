@@ -50,6 +50,18 @@ export interface Callout {
   text: string;
 }
 
+export interface MediaArtifact {
+  type: 'slide' | 'code' | 'diagram' | 'photo' | 'audio';
+  title?: string;
+  code_snippet?: string;
+  language?: string;
+  image_url?: string;
+  audio_duration?: string;
+  caption: string;
+  badge?: string;
+  align?: 'left' | 'right';
+}
+
 export interface NoteBlock {
   id: string;
   lesson_id: string;
@@ -66,6 +78,7 @@ export interface NoteBlock {
   uncertain?: string[];
   version: number;
   edited_by_teacher?: boolean;
+  media_artifact?: MediaArtifact;
 }
 
 export interface LessonSummary {

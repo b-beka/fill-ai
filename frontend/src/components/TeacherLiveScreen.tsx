@@ -4,24 +4,29 @@ import {
   Mic, 
   Layers, 
   HelpCircle, 
-  AlertTriangle, 
   CheckCircle, 
-  BookOpen, 
-  Sparkles,
-  Info,
-  ShieldCheck,
-  FileSpreadsheet,
-  Video,
-  Presentation,
-  Check,
-  Download,
-  X
+  ShieldCheck, 
+  FileSpreadsheet, 
+  Video, 
+  Presentation, 
+  Check, 
+  Download, 
+  X,
+  Volume2,
+  Code,
+  FileText,
+  Image as ImageIcon,
+  Play,
+  Pause,
+  AlertCircle,
+  Users,
+  CheckCheck,
+  RotateCcw
 } from 'lucide-react';
 import { 
-  DEMO_LESSON, 
-  DEMO_BLOCKS, 
+  ALL_TRACKS,
+  CurriculumTrack,
   DEMO_SLIDES, 
-  DEMO_LIVE_QUESTION, 
   DEMO_TRANSCRIPT,
   DEMO_ANKI_TSV
 } from '../services/mockData';
@@ -35,14 +40,15 @@ interface TeacherLiveScreenProps {
 }
 
 export const TeacherLiveScreen: React.FC<TeacherLiveScreenProps> = () => {
+  const [currentTrack, setCurrentTrack] = useState<CurriculumTrack>(ALL_TRACKS[0]);
+  const [blocks, setBlocks] = useState<NoteBlock[]>(ALL_TRACKS[0].blocks);
   const [liveState, setLiveState] = useState<LiveDemoState>('listen');
-  const [isTranscriptOpen, setIsTranscriptOpen] = useState(false);
-  const [timerSeconds, setTimerSeconds] = useState(42 * 60 + 15);
-  
-  // New Sprint 1, 2, 3 features state
-  const [blocks, setBlocks] = useState<NoteBlock[]>(DEMO_BLOCKS);
   const [visibilityMode, setVisibilityMode] = useState<VisibilityMode>('moderated');
   const [activeTab, setActiveTab] = useState<'notes' | 'slides'>('notes');
+  const [isTranscriptOpen, setIsTranscriptOpen] = useState(false);
+  const [timerSeconds, setTimerSeconds] = useState(42 * 60 + 15);
+  const [isPlayingAudio, setIsPlayingAudio] = useState<string | null>(null);
+  
   const [showAnkiModal, setShowAnkiModal] = useState(false);
   const [showRecordingModal, setShowRecordingModal] = useState(false);
 
@@ -52,6 +58,12 @@ export const TeacherLiveScreen: React.FC<TeacherLiveScreenProps> = () => {
     }, 1000);
     return () => clearInterval(interval);
   }, []);
+
+  const handleTrackChange = (track: CurriculumTrack) => {
+    setCurrentTrack(track);
+    setBlocks(track.blocks);
+    setLiveState('listen');
+  };
 
   const formatTimer = (totalSeconds: number) => {
     const mins = Math.floor(totalSeconds / 60);
@@ -65,53 +77,61 @@ export const TeacherLiveScreen: React.FC<TeacherLiveScreenProps> = () => {
     );
   };
 
+  const handleApproveAll = () => {
+    setBlocks((prev) => prev.map((b) => ({ ...b, status: 'approved' })));
+  };
+
   const downloadAnkiTsv = () => {
     const blob = new Blob([DEMO_ANKI_TSV], { type: 'text/tab-separated-values;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `lesson_${DEMO_LESSON.id}_anki.tsv`;
+    a.download = `lesson_${currentTrack.lesson.id}_anki.tsv`;
     a.click();
     URL.revokeObjectURL(url);
   };
 
+  const approvedCount = blocks.filter((b) => b.status === 'approved').length;
+  const pendingCount = blocks.filter((b) => b.status === 'pending_review').length;
+
   return (
     <div className="bg-fill-bg min-h-[calc(100vh-60px)] flex flex-col">
-      {/* Top Bar */}
+      {/* Top Header Bar */}
       <div className="bg-fill-surface border-b border-fill-border px-4 sm:px-8 py-3.5 flex items-center gap-4 flex-wrap">
         <div className="flex flex-col">
-          <strong className="font-head font-bold text-[15px] text-fill-text leading-snug">
-            {DEMO_LESSON.title}
-          </strong>
-          <span className="text-xs text-fill-text-faint">{DEMO_LESSON.subject}</span>
+          <div className="flex items-center gap-2">
+            <strong className="font-head font-bold text-[15px] text-fill-text leading-snug">
+              {currentTrack.lesson.title}
+            </strong>
+            <span className="badge badge-blue text-xs font-bold">RU</span>
+            <span className="badge badge-live text-xs">
+              <span className="dot" />
+              В эфире
+            </span>
+          </div>
+          <span className="text-xs text-fill-text-faint">{currentTrack.lesson.subject} · {currentTrack.category}</span>
         </div>
 
-        <span className="badge badge-blue text-xs font-bold">RU</span>
-        <span className="badge badge-live text-xs">
-          <span className="dot" />
-          В эфире
-        </span>
-
-        {/* Visibility Mode Badge */}
+        {/* Visibility Moderation Gate Badge */}
         <button
-          onClick={() => setVisibilityMode(prev => prev === 'moderated' ? 'live' : 'moderated')}
+          onClick={() => setVisibilityMode((prev) => (prev === 'moderated' ? 'live' : 'moderated'))}
           className={`badge text-xs transition-colors cursor-pointer ${
             visibilityMode === 'moderated'
               ? 'bg-fill-warning-soft text-fill-warning border border-fill-warning/30'
               : 'bg-fill-blue-soft text-fill-blue-text'
           }`}
-          title="Нажмите для переключения режима видимости"
+          title="Нажмите для переключения режима видимости конспекта для учеников"
         >
           <ShieldCheck className="w-3.5 h-3.5 mr-1" />
-          {visibilityMode === 'moderated' ? 'Премодерация конспекта' : 'Прямой эфир'}
+          {visibilityMode === 'moderated' ? 'Премодерация конспекта' : 'Прямой эфир (без премодерации)'}
         </button>
 
         <div className="flex-1" />
 
-        {/* Action Buttons: Slides, Anki, Recording */}
+        {/* Action Controls: Slides, Anki, Recording */}
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setActiveTab(prev => prev === 'notes' ? 'slides' : 'notes')}
+            onClick={() => setActiveTab((prev) => (prev === 'notes' ? 'slides' : 'notes'))}
             className={`btn btn-ghost text-xs py-1.5 px-3 flex items-center gap-1.5 ${
               activeTab === 'slides' ? 'bg-fill-surface-alt font-bold' : ''
             }`}
@@ -145,29 +165,50 @@ export const TeacherLiveScreen: React.FC<TeacherLiveScreenProps> = () => {
 
         <span className="flex items-center gap-1.5 text-xs text-fill-text-faint">
           <span className="w-1.5 h-1.5 rounded-full bg-fill-success" />
-          Подключено
+          Стрим активен
         </span>
       </div>
 
-      {/* State Switcher Controls */}
-      <div className="px-4 sm:px-8 pt-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex gap-0.5 bg-fill-surface-alt p-1 rounded-full overflow-x-auto max-w-full">
+      {/* Curriculum Track Switcher & Status Bar */}
+      <div className="bg-fill-surface-alt border-b border-fill-border px-4 sm:px-8 py-2.5 flex flex-wrap items-center justify-between gap-3">
+        {/* Universal Subject Tabs */}
+        <div className="flex items-center gap-1.5 overflow-x-auto max-w-full">
+          <span className="text-[11px] font-bold text-fill-text-faint uppercase mr-1 flex-none">
+            Дисциплина:
+          </span>
+          {ALL_TRACKS.map((track) => (
+            <button
+              key={track.id}
+              onClick={() => handleTrackChange(track)}
+              className={`text-xs font-semibold py-1 px-2.5 rounded-md transition-all whitespace-nowrap ${
+                currentTrack.id === track.id
+                  ? 'bg-fill-surface text-fill-text font-bold shadow-sm border border-fill-border'
+                  : 'text-fill-text-muted hover:text-fill-text'
+              }`}
+            >
+              {track.name.split(':')[0]}
+            </button>
+          ))}
+        </div>
+
+        {/* Live State Simulation Controls */}
+        <div className="flex items-center gap-1 bg-fill-surface p-1 rounded-full border border-fill-border overflow-x-auto">
           {(
             [
               ['listen', 'Слушает'],
               ['process', 'Обрабатывает'],
               ['question', 'Вопрос активен'],
               ['results', 'Результаты'],
-              ['attention', 'Нужно внимание'],
+              ['attention', 'Внимание'],
             ] as const
           ).map(([stateKey, label]) => (
             <button
               key={stateKey}
               onClick={() => setLiveState(stateKey)}
               aria-pressed={liveState === stateKey}
-              className={`text-xs font-semibold py-1.5 px-3 rounded-full whitespace-nowrap transition-all ${
+              className={`text-[11px] font-semibold py-1 px-2.5 rounded-full whitespace-nowrap transition-all ${
                 liveState === stateKey
-                  ? 'bg-fill-surface text-fill-text shadow-sm'
+                  ? 'bg-fill-text text-fill-surface shadow-sm'
                   : 'text-fill-text-muted hover:text-fill-text'
               }`}
             >
@@ -175,21 +216,11 @@ export const TeacherLiveScreen: React.FC<TeacherLiveScreenProps> = () => {
             </button>
           ))}
         </div>
-
-        <div className="text-xs text-fill-text-faint">
-          {visibilityMode === 'moderated' ? (
-            <span className="text-fill-warning font-medium">
-              * Режим премодерации: ученики видят только одобренные блоки
-            </span>
-          ) : (
-            <span>* Прямой режим: блоки сразу видны ученикам</span>
-          )}
-        </div>
       </div>
 
-      {/* Main Area: Notes or Slides */}
+      {/* Main Area: Notes Stream or Slide Deck */}
       {activeTab === 'slides' ? (
-        /* Slide Deck View (Sprint 2) */
+        /* Slide Deck View */
         <div className="px-4 sm:px-8 py-5 flex-1">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -198,7 +229,7 @@ export const TeacherLiveScreen: React.FC<TeacherLiveScreenProps> = () => {
                 Слайды презентации (Materials Ingestion)
               </h2>
               <p className="text-xs text-fill-text-muted">
-                Автоматически обработаны из PDF через PyMuPDF с извлечением OCR и ключевых понятий.
+                Автоматически обработаны из PDF через PyMuPDF с извлечением ключевых понятий и генерацией pHash.
               </p>
             </div>
             <button
@@ -220,14 +251,14 @@ export const TeacherLiveScreen: React.FC<TeacherLiveScreenProps> = () => {
                     Слайд #{slide.slide_idx}
                   </span>
                   <Presentation className="w-12 h-12 text-fill-blue opacity-50 mb-2" />
-                  <span className="text-xs text-fill-text-faint font-mono">pHash: {slide.phash.slice(0, 8)}…</span>
+                  <span className="text-xs text-fill-text-faint font-mono">
+                    pHash: {slide.phash.slice(0, 8)}…
+                  </span>
                 </div>
                 <div className="p-4 flex-1 flex flex-col justify-between">
-                  <div>
-                    <p className="text-xs text-fill-text-muted mb-3 leading-relaxed">
-                      {slide.extracted_text}
-                    </p>
-                  </div>
+                  <p className="text-xs text-fill-text-muted mb-3 leading-relaxed">
+                    {slide.extracted_text}
+                  </p>
                   <div>
                     <span className="text-[11px] font-bold text-fill-text-faint block mb-1.5">
                       Ключевые термины:
@@ -249,125 +280,214 @@ export const TeacherLiveScreen: React.FC<TeacherLiveScreenProps> = () => {
           </div>
         </div>
       ) : (
-        /* Main Grid: Notes Stream & Sidebar */
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 px-4 sm:px-8 py-5 flex-1 items-start">
-          {/* Left: Notes Column */}
+        /* Main Grid: Editorial Notes & Live Sidebar */
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6 px-4 sm:px-8 py-5 flex-1 items-start">
+          {/* Left: Editorial Book-like Notes Column */}
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-[15px] font-bold text-fill-text">AI-конспект</h2>
-              <span className="text-xs text-fill-text-faint flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-fill-blue animate-pulse" />
-                Обновляется в реальном времени
-              </span>
+            <div className="flex items-center justify-between border-b border-fill-border pb-3">
+              <div className="flex items-center gap-3">
+                <h2 className="text-[16px] font-bold text-fill-text">
+                  AI-конспект урока
+                </h2>
+                <span className="text-xs text-fill-text-faint">
+                  {blocks.length} раздела ({approvedCount} одобрено)
+                </span>
+              </div>
+
+              {/* Moderation Controls */}
+              {visibilityMode === 'moderated' && pendingCount > 0 && (
+                <button
+                  onClick={handleApproveAll}
+                  className="btn btn-secondary text-xs py-1 px-3 flex items-center gap-1.5"
+                  title="Одобрить все ожидающие блоки одной кнопкой"
+                >
+                  <CheckCheck className="w-3.5 h-3.5 text-fill-success" />
+                  Одобрить все ({pendingCount})
+                </button>
+              )}
             </div>
 
-            {/* Render Blocks */}
-            {blocks.map((block) => (
-              <div
-                key={block.id}
-                className={`bg-fill-surface border rounded-lg p-5 sm:p-6 shadow-sm transition-all ${
-                  block.status === 'pending_review'
-                    ? 'border-fill-warning bg-fill-warning-soft/20'
-                    : 'border-fill-border'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-[16.5px] font-bold text-fill-text">
-                    {block.title}
-                  </h3>
+            {/* Render Blocks in Editorial Side-by-Side Style */}
+            {blocks.map((block, idx) => {
+              const hasMedia = Boolean(block.media_artifact);
+              const isMediaLeft = block.media_artifact?.align === 'left';
 
-                  {/* Moderation Status (Sprint 1) */}
-                  {visibilityMode === 'moderated' && (
+              return (
+                <div
+                  key={block.id}
+                  className={`bg-fill-surface border rounded-xl p-5 sm:p-6 shadow-sm transition-all ${
+                    block.status === 'pending_review'
+                      ? 'border-fill-warning/60 bg-fill-warning-soft/10'
+                      : 'border-fill-border'
+                  }`}
+                >
+                  {/* Block Header */}
+                  <div className="flex items-center justify-between gap-2 mb-3 pb-2 border-b border-fill-border/60">
                     <div className="flex items-center gap-2">
-                      {block.status === 'pending_review' ? (
-                        <span className="badge bg-fill-warning-soft text-fill-warning text-[11px] font-bold">
-                          На проверке
-                        </span>
-                      ) : (
-                        <span className="badge bg-fill-success-soft text-fill-success text-[11px] font-bold flex items-center gap-1">
-                          <Check className="w-3 h-3" />
-                          Одобрен
-                        </span>
+                      <span className="text-xs font-mono font-bold text-fill-text-faint">
+                        #{idx + 1}
+                      </span>
+                      <h3 className="text-[16px] font-bold text-fill-text">
+                        {block.title}
+                      </h3>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] font-mono text-fill-text-faint">
+                        {Math.floor(block.t_start_ms / 60000)}:00
+                      </span>
+
+                      {/* Moderation Status */}
+                      {visibilityMode === 'moderated' && (
+                        block.status === 'pending_review' ? (
+                          <span className="badge bg-fill-warning-soft text-fill-warning text-[11px] font-bold">
+                            На проверке
+                          </span>
+                        ) : (
+                          <span className="badge bg-fill-success-soft text-fill-success text-[11px] font-bold flex items-center gap-1">
+                            <Check className="w-3 h-3" />
+                            Одобрен
+                          </span>
+                        )
                       )}
+                    </div>
+                  </div>
+
+                  {/* Two-Column Editorial Grid for Media + Narrative */}
+                  <div
+                    className={`grid grid-cols-1 ${
+                      hasMedia ? 'md:grid-cols-12' : ''
+                    } gap-5 items-start`}
+                  >
+                    {/* Media Artifact Frame */}
+                    {hasMedia && block.media_artifact && (
+                      <div
+                        className={`md:col-span-5 ${
+                          isMediaLeft ? 'md:order-1' : 'md:order-2'
+                        } border border-fill-border rounded-lg overflow-hidden bg-fill-surface-alt shadow-sm`}
+                      >
+                        {/* Frame Header */}
+                        <div className="px-3 py-1.5 border-b border-fill-border flex items-center justify-between bg-fill-surface text-[11px] font-bold text-fill-text-muted">
+                          <span className="flex items-center gap-1.5">
+                            {block.media_artifact.type === 'audio' && <Volume2 className="w-3.5 h-3.5 text-fill-blue" />}
+                            {block.media_artifact.type === 'code' && <Code className="w-3.5 h-3.5 text-fill-green-deep" />}
+                            {block.media_artifact.type === 'slide' && <FileText className="w-3.5 h-3.5 text-fill-text-faint" />}
+                            {block.media_artifact.type === 'photo' && <ImageIcon className="w-3.5 h-3.5 text-fill-text-faint" />}
+                            {block.media_artifact.title || 'Иллюстрация к тезису'}
+                          </span>
+                          {block.media_artifact.badge && (
+                            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-fill-surface-alt border border-fill-border text-fill-text-faint">
+                              {block.media_artifact.badge}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Frame Body */}
+                        <div className="p-3 bg-fill-surface flex flex-col gap-2">
+                          {/* Code Preview */}
+                          {block.media_artifact.type === 'code' && block.media_artifact.code_snippet && (
+                            <pre className="font-mono text-[11px] p-2.5 rounded bg-[#14171A] text-slate-100 overflow-x-auto leading-relaxed">
+                              <code>{block.media_artifact.code_snippet}</code>
+                            </pre>
+                          )}
+
+                          {/* Audio Player Preview */}
+                          {block.media_artifact.type === 'audio' && (
+                            <div className="p-2.5 rounded-md bg-fill-surface-alt border border-fill-border flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() =>
+                                    setIsPlayingAudio((prev) =>
+                                      prev === block.id ? null : block.id
+                                    )
+                                  }
+                                  className="w-6 h-6 rounded-full bg-fill-text text-fill-surface flex items-center justify-center text-xs"
+                                >
+                                  {isPlayingAudio === block.id ? (
+                                    <Pause className="w-3 h-3 text-fill-surface" />
+                                  ) : (
+                                    <Play className="w-3 h-3 text-fill-surface ml-0.5" />
+                                  )}
+                                </button>
+                                <span className="text-xs font-semibold text-fill-text">
+                                  Аудио {block.media_artifact.audio_duration}
+                                </span>
+                              </div>
+                              <span className="text-[11px] font-mono text-fill-green-deep font-bold">
+                                {isPlayingAudio === block.id ? 'Играет' : 'Слушать'}
+                              </span>
+                            </div>
+                          )}
+
+                          {/* Diagram / Slide Placeholder */}
+                          {(block.media_artifact.type === 'slide' ||
+                            block.media_artifact.type === 'diagram' ||
+                            block.media_artifact.type === 'photo') && (
+                            <div className="w-full h-28 rounded bg-fill-surface-alt border border-dashed border-fill-border flex flex-col items-center justify-center text-center p-2">
+                              <span className="text-xs font-bold text-fill-text">
+                                {block.media_artifact.title}
+                              </span>
+                              <span className="text-[10.5px] text-fill-text-faint mt-0.5">
+                                Векторный слайд (Zero-Cost pHash)
+                              </span>
+                            </div>
+                          )}
+
+                          {/* Caption */}
+                          <p className="text-[11px] text-fill-text-faint italic leading-snug border-t border-fill-border pt-1.5">
+                            {block.media_artifact.caption}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Narrative Explanation Column */}
+                    <div className={hasMedia ? 'md:col-span-7' : 'w-full'}>
+                      <p className="text-sm text-fill-text leading-relaxed whitespace-pre-line">
+                        {block.body_md}
+                      </p>
+
+                      {/* Genuine Callout (e.g. Faithfulness warning or key takeaway) */}
+                      {block.callouts?.map((callout, cIdx) => (
+                        <div
+                          key={cIdx}
+                          className="rounded-md p-3 mt-3 text-xs leading-relaxed bg-fill-surface-alt border border-fill-border text-fill-text-muted flex gap-2"
+                        >
+                          <AlertCircle className="w-3.5 h-3.5 flex-none mt-0.5 text-fill-blue" />
+                          <span>
+                            {callout.title && <b className="text-fill-text">{callout.title}: </b>}
+                            {callout.text}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Teacher Moderation Action */}
+                  {visibilityMode === 'moderated' && block.status === 'pending_review' && (
+                    <div className="mt-4 pt-3 border-t border-fill-border flex items-center justify-between">
+                      <span className="text-xs text-fill-text-faint">
+                        Ученики увидят этот блок только после вашего подтверждения.
+                      </span>
+                      <button
+                        onClick={() => handleApprove(block.id)}
+                        className="btn btn-primary text-xs py-1.5 px-3.5 flex items-center gap-1.5 shadow-sm"
+                      >
+                        <Check className="w-3.5 h-3.5" />
+                        Одобрить блок для учеников
+                      </button>
                     </div>
                   )}
                 </div>
-
-                <p className="text-sm sm:text-[14.5px] text-fill-text-muted leading-relaxed">
-                  {block.body_md}
-                </p>
-
-                {/* Callouts (Definitions, Examples, Faithfulness Warnings) */}
-                {block.callouts?.map((callout, cIdx) => (
-                  <div
-                    key={cIdx}
-                    className={`rounded-md p-3.5 mt-3 text-xs sm:text-[13.5px] leading-relaxed flex gap-2.5 ${
-                      callout.type === 'definition'
-                        ? 'bg-fill-blue-soft text-fill-blue-text'
-                        : callout.type === 'warning'
-                        ? 'bg-fill-warning-soft text-fill-warning border border-fill-warning/40'
-                        : 'bg-fill-surface-alt text-fill-text-muted border border-dashed border-fill-border'
-                    }`}
-                  >
-                    {callout.type === 'definition' && <BookOpen className="w-4 h-4 flex-none mt-0.5" />}
-                    {callout.type === 'warning' && <AlertTriangle className="w-4 h-4 flex-none mt-0.5 text-fill-warning" />}
-                    {callout.type === 'example' && <Sparkles className="w-4 h-4 flex-none mt-0.5 text-fill-green-deep" />}
-                    <span>
-                      {callout.title && <b>{callout.title}: </b>}
-                      {callout.text}
-                    </span>
-                  </div>
-                ))}
-
-                {/* Visual Frame if referenced */}
-                {block.frame_refs && block.frame_refs.length > 0 && (
-                  <div className="mt-4 border border-fill-border rounded-md overflow-hidden bg-fill-surface">
-                    <div className="bg-fill-surface-alt p-4 flex justify-center">
-                      <svg viewBox="0 0 280 140" className="w-[240px] h-auto">
-                        <rect x="4" y="60" width="272" height="10" rx="5" fill="var(--border)" />
-                        <circle cx="70" cy="65" r="16" fill="none" stroke="var(--blue)" strokeWidth="2" />
-                        <circle cx="70" cy="65" r="3" fill="var(--blue)" />
-                        <circle cx="70" cy="30" r="8" fill="none" stroke="var(--green-deep)" strokeWidth="2" />
-                        <line x1="70" y1="38" x2="70" y2="50" stroke="var(--green-deep)" strokeWidth="2" />
-                        <circle cx="70" cy="30" r="12" fill="none" stroke="var(--border)" strokeDasharray="2 3" />
-                        <circle cx="200" cy="65" r="10" fill="none" stroke="var(--blue)" strokeWidth="2" />
-                        <circle cx="52" cy="18" r="9" fill="var(--surface)" stroke="var(--text)" strokeWidth="1.3" />
-                        <text x="52" y="22" fontSize="10" textAnchor="middle" fontFamily="IBM Plex Sans" fill="var(--text)">1</text>
-                        <circle cx="200" cy="46" r="9" fill="var(--surface)" stroke="var(--text)" strokeWidth="1.3" />
-                        <text x="200" y="50" fontSize="10" textAnchor="middle" fontFamily="IBM Plex Sans" fill="var(--text)">2</text>
-                      </svg>
-                    </div>
-                    <div className="p-2.5 sm:p-3 text-xs text-fill-text-muted flex flex-col gap-1 border-t border-fill-border bg-fill-surface">
-                      <span><b>1.</b> Сигнальная молекула, распознаваемая рецептором</span>
-                      <span><b>2.</b> Белок-рецептор, встроенный в мембрану</span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Teacher Action: Approve block button (Sprint 1) */}
-                {visibilityMode === 'moderated' && block.status === 'pending_review' && (
-                  <div className="mt-4 pt-3 border-t border-fill-border flex items-center justify-between">
-                    <span className="text-xs text-fill-text-faint">
-                      Ученики увидят этот блок только после одобрения.
-                    </span>
-                    <button
-                      onClick={() => handleApprove(block.id)}
-                      className="btn btn-primary text-xs py-1.5 px-3.5 flex items-center gap-1.5 shadow-sm"
-                    >
-                      <Check className="w-3.5 h-3.5" />
-                      Одобрить блок для учеников
-                    </button>
-                  </div>
-                )}
-              </div>
-            ))}
+              );
+            })}
 
             {/* Skeleton Block during 'process' state */}
             {liveState === 'process' && (
-              <div className="bg-fill-surface border border-dashed border-fill-border rounded-lg p-5 sm:p-6">
+              <div className="bg-fill-surface border border-dashed border-fill-border rounded-xl p-5 sm:p-6">
                 <div className="text-xs text-fill-text-faint flex items-center gap-2 mb-3">
                   <span className="w-1.5 h-1.5 rounded-full bg-fill-blue animate-pulse" />
-                  Формируется новый блок конспекта…
+                  Gemini 3.6 Flash формирует новый блок конспекта…
                 </div>
                 <div className="sk-line" style={{ width: '55%' }} />
                 <div className="sk-line" style={{ width: '88%' }} />
@@ -376,20 +496,20 @@ export const TeacherLiveScreen: React.FC<TeacherLiveScreenProps> = () => {
             )}
           </div>
 
-          {/* Right: Sidebar */}
+          {/* Right: Live Interactive Sidebar */}
           <div className="space-y-4">
-            {/* Attention Banner */}
+            {/* Attention Alert Banner */}
             {liveState === 'attention' && (
-              <div className="bg-fill-warning-soft border border-fill-warning-soft rounded-md p-3.5 flex gap-2.5 text-xs sm:text-[13.5px] text-fill-warning leading-snug">
-                <AlertTriangle className="w-4 h-4 flex-none mt-0.5" />
-                <span>Живые вопросы временно недоступны. Конспект продолжает создаваться в обычном режиме.</span>
+              <div className="bg-fill-warning-soft border border-fill-warning-soft rounded-lg p-3.5 flex gap-2.5 text-xs text-fill-warning leading-snug">
+                <AlertCircle className="w-4 h-4 flex-none mt-0.5" />
+                <span>Живые вопросы временно приостановлены. Конспект продолжает создаваться в штатном режиме.</span>
               </div>
             )}
 
             {/* AI Status Card */}
-            <div className="bg-fill-surface border border-fill-border rounded-lg p-4 sm:p-5 shadow-sm">
+            <div className="bg-fill-surface border border-fill-border rounded-xl p-4 sm:p-5 shadow-sm">
               <h4 className="text-[11.5px] font-bold text-fill-text-faint uppercase tracking-wider mb-3">
-                Статус AI
+                Статус AI-ассистента
               </h4>
 
               {liveState === 'listen' && (
@@ -399,7 +519,7 @@ export const TeacherLiveScreen: React.FC<TeacherLiveScreenProps> = () => {
                   </div>
                   <div>
                     <strong className="block text-sm font-bold text-fill-text">Слушаю</strong>
-                    <span className="text-xs text-fill-text-muted">Улавливаю объяснение учителя</span>
+                    <span className="text-xs text-fill-text-muted">Анализирую живую речь преподавателя</span>
                   </div>
                 </div>
               )}
@@ -411,7 +531,7 @@ export const TeacherLiveScreen: React.FC<TeacherLiveScreenProps> = () => {
                   </div>
                   <div>
                     <strong className="block text-sm font-bold text-fill-text">Обрабатываю</strong>
-                    <span className="text-xs text-fill-text-muted">Собираю новый блок конспекта</span>
+                    <span className="text-xs text-fill-text-muted">Генерирую понятную заметку с медиа</span>
                   </div>
                 </div>
               )}
@@ -422,8 +542,8 @@ export const TeacherLiveScreen: React.FC<TeacherLiveScreenProps> = () => {
                     <HelpCircle className="w-4 h-4" />
                   </div>
                   <div>
-                    <strong className="block text-sm font-bold text-fill-text">Вопрос опубликован</strong>
-                    <span className="text-xs text-fill-text-muted">Ждём ответы учеников</span>
+                    <strong className="block text-sm font-bold text-fill-text">Вопрос активен</strong>
+                    <span className="text-xs text-fill-text-muted">Ученики отправляют ответы</span>
                   </div>
                 </div>
               )}
@@ -431,11 +551,11 @@ export const TeacherLiveScreen: React.FC<TeacherLiveScreenProps> = () => {
               {liveState === 'results' && (
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-md bg-fill-green-soft text-fill-green-deep flex items-center justify-center flex-none">
-                    <Mic className="w-4 h-4" />
+                    <CheckCircle className="w-4 h-4" />
                   </div>
                   <div>
-                    <strong className="block text-sm font-bold text-fill-text">Слушаю</strong>
-                    <span className="text-xs text-fill-text-muted">Вопрос закрыт, продолжаю конспект</span>
+                    <strong className="block text-sm font-bold text-fill-text">Результаты получены</strong>
+                    <span className="text-xs text-fill-text-muted">Аналитика готова к разбору</span>
                   </div>
                 </div>
               )}
@@ -443,125 +563,123 @@ export const TeacherLiveScreen: React.FC<TeacherLiveScreenProps> = () => {
               {liveState === 'attention' && (
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-md bg-fill-warning-soft text-fill-warning flex items-center justify-center flex-none">
-                    <AlertTriangle className="w-4 h-4" />
+                    <AlertCircle className="w-4 h-4" />
                   </div>
                   <div>
                     <strong className="block text-sm font-bold text-fill-text">Нужно внимание</strong>
-                    <span className="text-xs text-fill-text-muted">Живые вопросы приостановлены</span>
+                    <span className="text-xs text-fill-text-muted">Проверьте соединение с микрофоном</span>
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Connected Students */}
-            <div className="bg-fill-surface border border-fill-border rounded-lg p-4 sm:p-5 shadow-sm">
-              <h4 className="text-[11.5px] font-bold text-fill-text-faint uppercase tracking-wider mb-2">
-                Ученики на уроке
-              </h4>
-              <div className="flex items-baseline justify-between">
-                <span className="font-head font-extrabold text-2xl text-fill-text tabular-nums">
-                  28 / 30
+            {/* Connected Students & Moderation Metric */}
+            <div className="bg-fill-surface border border-fill-border rounded-xl p-4 sm:p-5 shadow-sm space-y-3">
+              <div>
+                <h4 className="text-[11.5px] font-bold text-fill-text-faint uppercase tracking-wider mb-1">
+                  Ученики в аудитории
+                </h4>
+                <div className="flex items-baseline justify-between">
+                  <span className="font-head font-extrabold text-2xl text-fill-text tabular-nums flex items-center gap-2">
+                    <Users className="w-5 h-5 text-fill-green-deep" />
+                    28 / 30
+                  </span>
+                  <span className="text-xs text-fill-text-faint">в сети</span>
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-fill-border flex items-center justify-between text-xs">
+                <span className="text-fill-text-muted">Премодерация:</span>
+                <span className="font-bold text-fill-text">
+                  {approvedCount} из {blocks.length} одобрено
                 </span>
-                <span className="text-xs text-fill-text-faint">подключено</span>
               </div>
             </div>
 
-            {/* Active Question Card */}
-            {liveState === 'question' && (
-              <div className="bg-fill-surface border border-fill-border rounded-lg p-5 shadow-sm">
-                <div className="text-[11.5px] font-bold uppercase tracking-wider text-fill-green-deep mb-2">
-                  {DEMO_LIVE_QUESTION.eyebrow}
+            {/* Interactive Live Task Card (Sprint 3 / Hands-free Live Tasks) */}
+            <div className="bg-fill-surface border border-fill-border rounded-xl p-5 shadow-sm">
+              <div className="flex items-center justify-between mb-2">
+                <div className="text-[11px] font-bold uppercase tracking-wider text-fill-green-deep">
+                  {currentTrack.live_question.eyebrow}
                 </div>
-                <h3 className="text-[15.5px] font-bold text-fill-text mb-3 leading-snug">
-                  {DEMO_LIVE_QUESTION.text}
-                </h3>
+                <span className="badge badge-blue text-[10px]">
+                  {liveState === 'question' ? 'Опрос идёт' : 'Завершён'}
+                </span>
+              </div>
 
-                <div className="space-y-2">
-                  {DEMO_LIVE_QUESTION.options.map((opt, i) => (
-                    <div key={i} className="flex items-center gap-2.5 py-1 text-sm text-fill-text-muted">
-                      <span className="w-4 h-4 rounded-full border-[1.6px] border-fill-border flex-none" />
-                      <span>{opt.text}</span>
+              <h3 className="text-[14.5px] font-bold text-fill-text mb-3 leading-snug">
+                {currentTrack.live_question.text}
+              </h3>
+
+              {/* Options & Response Distribution */}
+              <div className="space-y-2.5">
+                {currentTrack.live_question.options.map((opt) => (
+                  <div key={opt.id} className="space-y-1">
+                    <div className="flex justify-between text-xs font-semibold">
+                      <span className={opt.is_correct ? 'text-fill-success font-bold flex items-center gap-1' : 'text-fill-text-muted'}>
+                        {opt.id}. {opt.text}
+                        {opt.is_correct && <Check className="w-3.5 h-3.5 inline text-fill-success" />}
+                      </span>
+                      <span className={opt.is_correct ? 'text-fill-success font-bold' : 'text-fill-text-faint'}>
+                        {opt.percent}%
+                      </span>
                     </div>
-                  ))}
-                </div>
-
-                <div className="mt-4 pt-3.5 border-t border-fill-border">
-                  <div className="flex justify-between text-xs text-fill-text-faint mb-1.5">
-                    <span>Ответили</span>
-                    <span>{DEMO_LIVE_QUESTION.answered_count} из {DEMO_LIVE_QUESTION.total_students}</span>
+                    <div className="h-1.5 rounded-full bg-fill-surface-alt overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all duration-700 ${
+                          opt.is_correct ? 'bg-fill-success' : 'bg-fill-border'
+                        }`}
+                        style={{ width: `${opt.percent}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="h-1.5 rounded-full bg-fill-surface-alt overflow-hidden">
-                    <div 
-                      className="h-full bg-fill-blue rounded-full transition-all duration-500" 
-                      style={{ width: `${(DEMO_LIVE_QUESTION.answered_count / DEMO_LIVE_QUESTION.total_students) * 100}%` }}
-                    />
-                  </div>
-                </div>
+                ))}
+              </div>
 
-                <button 
-                  onClick={() => setLiveState('results')}
-                  className="btn btn-ghost w-full justify-center text-xs mt-4 py-2"
+              {/* Real-time Diagnostics Insight from Gemini Flash-Lite */}
+              <div className="mt-4 p-3 rounded-lg bg-fill-blue-soft border border-fill-blue-soft text-xs text-fill-blue-text leading-relaxed">
+                <div className="font-bold text-[11px] uppercase tracking-wider mb-1 text-fill-blue">
+                  AI-аналитика ответов:
+                </div>
+                <div>{currentTrack.live_question.insight}</div>
+              </div>
+
+              {/* Action Buttons for Task */}
+              <div className="mt-4 pt-3 border-t border-fill-border flex gap-2">
+                <button
+                  onClick={() => setLiveState((prev) => (prev === 'question' ? 'results' : 'question'))}
+                  className="btn btn-secondary flex-1 text-xs py-1.5"
                 >
-                  Закрыть вопрос
+                  {liveState === 'question' ? 'Остановить сбор' : 'Запустить опрос'}
+                </button>
+                <button
+                  onClick={() => setLiveState('listen')}
+                  className="btn btn-ghost text-xs py-1.5 px-2.5"
+                  title="Сбросить состояние"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
                 </button>
               </div>
-            )}
-
-            {/* Closed Question Results */}
-            {liveState === 'results' && (
-              <div className="bg-fill-surface border border-fill-border rounded-lg p-5 shadow-sm">
-                <div className="text-[11.5px] font-bold uppercase tracking-wider text-fill-text-faint mb-2">
-                  Вопрос закрыт
-                </div>
-                <h3 className="text-[15.5px] font-bold text-fill-text mb-3 leading-snug">
-                  {DEMO_LIVE_QUESTION.text}
-                </h3>
-
-                <div className="space-y-3">
-                  {DEMO_LIVE_QUESTION.options.map((opt, idx) => (
-                    <div key={idx} className="space-y-1">
-                      <div className="flex justify-between text-xs font-semibold">
-                        <span className={opt.is_correct ? 'text-fill-success font-bold flex items-center gap-1' : 'text-fill-text-muted'}>
-                          {opt.text}
-                          {opt.is_correct && <CheckCircle className="w-3.5 h-3.5 inline" />}
-                        </span>
-                        <span className={opt.is_correct ? 'text-fill-success font-bold' : 'text-fill-text-faint'}>
-                          {opt.percent}%
-                        </span>
-                      </div>
-                      <div className="h-1.5 rounded-full bg-fill-surface-alt overflow-hidden">
-                        <div
-                          className={`h-full rounded-full transition-all duration-700 ${
-                            opt.is_correct ? 'bg-fill-success' : 'bg-fill-border'
-                          }`}
-                          style={{ width: `${opt.percent}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="mt-4 p-3 rounded-md bg-fill-blue-soft border border-fill-blue-soft flex gap-2.5 text-xs text-fill-blue-text leading-relaxed">
-                  <Info className="w-4 h-4 flex-none mt-0.5" />
-                  <span>{DEMO_LIVE_QUESTION.insight}</span>
-                </div>
-              </div>
-            )}
+            </div>
           </div>
         </div>
       )}
 
-      {/* Bottom Collapsible Transcript Strip with Word Timestamps (Sprint 3) */}
+      {/* Bottom Collapsible Transcript Strip with Word Timestamps */}
       <div className="border-t border-fill-border bg-fill-surface px-4 sm:px-8 mt-auto">
         <div
           onClick={() => setIsTranscriptOpen(!isTranscriptOpen)}
-          className="flex items-center justify-between py-3.5 cursor-pointer user-select-none hover:opacity-80 transition-opacity"
+          className="flex items-center justify-between py-3.5 cursor-pointer select-none hover:opacity-80 transition-opacity"
         >
           <div className="flex items-center gap-2 text-xs font-semibold text-fill-text-faint">
             <Mic className="w-4 h-4" />
-            Транскрипт урока (Soniox ASR)
+            Живой транскрипт урока (Soniox ASR)
           </div>
-          <ChevronDown className={`w-4 h-4 text-fill-text-faint transition-transform duration-200 ${isTranscriptOpen ? 'rotate-180' : ''}`} />
+          <ChevronDown
+            className={`w-4 h-4 text-fill-text-faint transition-transform duration-200 ${
+              isTranscriptOpen ? 'rotate-180' : ''
+            }`}
+          />
         </div>
 
         {isTranscriptOpen && (
@@ -575,7 +693,11 @@ export const TeacherLiveScreen: React.FC<TeacherLiveScreenProps> = () => {
                 <span className={i === DEMO_TRANSCRIPT.length - 1 ? 'typing-cursor text-fill-text' : ''}>
                   {seg.words ? (
                     seg.words.map((w, wIdx) => (
-                      <span key={wIdx} className="hover:text-fill-blue hover:underline cursor-pointer" title={`${w.start_ms}ms`}>
+                      <span
+                        key={wIdx}
+                        className="hover:text-fill-blue hover:underline cursor-pointer"
+                        title={`${w.start_ms}ms`}
+                      >
                         {w.word}{' '}
                       </span>
                     ))
@@ -589,10 +711,10 @@ export const TeacherLiveScreen: React.FC<TeacherLiveScreenProps> = () => {
         )}
       </div>
 
-      {/* Anki Flashcards Modal (Sprint 1) */}
+      {/* Anki Flashcards Export Modal */}
       {showAnkiModal && (
         <div className="fixed inset-0 bg-[#14171A]/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-fill-surface border border-fill-border rounded-lg max-w-lg w-full p-6 shadow-xl relative">
+          <div className="bg-fill-surface border border-fill-border rounded-xl max-w-lg w-full p-6 shadow-xl relative">
             <button
               onClick={() => setShowAnkiModal(false)}
               className="absolute top-4 right-4 text-fill-text-faint hover:text-fill-text"
@@ -608,7 +730,7 @@ export const TeacherLiveScreen: React.FC<TeacherLiveScreenProps> = () => {
               Сгенерировано эндпоинтом <code>GET /v1/lessons/{'{id}'}/export?format=anki</code> из глоссария и ключевых понятий урока.
             </p>
 
-            <div className="bg-fill-surface-alt rounded-md p-3 max-h-48 overflow-auto mb-5 font-mono text-[11px] text-fill-text whitespace-pre">
+            <div className="bg-fill-surface-alt rounded-lg p-3 max-h-48 overflow-auto mb-5 font-mono text-[11px] text-fill-text whitespace-pre border border-fill-border">
               {DEMO_ANKI_TSV}
             </div>
 
@@ -621,7 +743,7 @@ export const TeacherLiveScreen: React.FC<TeacherLiveScreenProps> = () => {
               </button>
               <button
                 onClick={downloadAnkiTsv}
-                className="btn btn-primary text-xs py-2 px-4 flex items-center gap-1.5"
+                className="btn btn-primary text-xs py-2 px-4 flex items-center gap-1.5 shadow-sm"
               >
                 <Download className="w-3.5 h-3.5" />
                 Скачать lesson_anki.tsv
@@ -631,10 +753,10 @@ export const TeacherLiveScreen: React.FC<TeacherLiveScreenProps> = () => {
         </div>
       )}
 
-      {/* Recording Playback Modal (Sprint 3) */}
+      {/* Synchronized Recording Playback Modal */}
       {showRecordingModal && (
         <div className="fixed inset-0 bg-[#14171A]/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-fill-surface border border-fill-border rounded-lg max-w-md w-full p-6 shadow-xl relative">
+          <div className="bg-fill-surface border border-fill-border rounded-xl max-w-md w-full p-6 shadow-xl relative">
             <button
               onClick={() => setShowRecordingModal(false)}
               className="absolute top-4 right-4 text-fill-text-faint hover:text-fill-text"
@@ -650,10 +772,10 @@ export const TeacherLiveScreen: React.FC<TeacherLiveScreenProps> = () => {
               LiveKit Egress сервис сохраняет видео/аудио поток в MinIO S3 и предоставляет воспроизведение через <code>GET /v1/lessons/{'{id}'}/recording</code>.
             </p>
 
-            <div className="aspect-video bg-fill-surface-alt rounded-md border border-fill-border flex flex-col items-center justify-center p-4 text-center mb-5">
+            <div className="aspect-video bg-fill-surface-alt rounded-lg border border-fill-border flex flex-col items-center justify-center p-4 text-center mb-5">
               <Video className="w-10 h-10 text-fill-text-faint mb-2" />
               <span className="text-xs font-semibold text-fill-text">
-                LiveKit Room: room_{DEMO_LESSON.id.slice(0, 8)}
+                LiveKit Room: room_{currentTrack.lesson.id.slice(0, 8)}
               </span>
               <span className="text-[11px] text-fill-text-faint mt-1">
                 Формат: MP4 H.264 / AAC (1080p, 30fps)
