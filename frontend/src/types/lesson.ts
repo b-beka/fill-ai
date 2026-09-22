@@ -139,3 +139,47 @@ export interface LessonState {
   summary?: LessonSummary | null;
   transcript: TranscriptSegment[];
 }
+
+export interface MissedBlockInfo {
+  id: string;
+  title: string;
+  t_start_ms: number;
+  t_end_ms: number;
+  duration_str: string;
+  reason: 'disconnected' | 'unfocused';
+}
+
+export interface StudentAttendance {
+  id: string;
+  student_id: string;
+  student_name: string;
+  status: 'active' | 'idle' | 'disconnected';
+  duration_minutes: number;
+  presence_percentage: number;
+  focus_score: number;
+  missed_blocks: MissedBlockInfo[];
+  tasks_answered: number;
+  tasks_correct: number;
+  tasks_accuracy: number;
+  catchup_sent: boolean;
+  recommendation: string;
+}
+
+export interface EngagementPulsePoint {
+  minute: number;
+  active_students_count: number;
+  attention_percent: number;
+  is_drop_alert?: boolean;
+}
+
+export interface LessonAttendanceReport {
+  lesson_id: string;
+  lesson_title: string;
+  total_students_enrolled: number;
+  present_students_count: number;
+  average_presence_percent: number;
+  average_focus_score: number;
+  total_tasks_accuracy: number;
+  pulse: EngagementPulsePoint[];
+  students: StudentAttendance[];
+}

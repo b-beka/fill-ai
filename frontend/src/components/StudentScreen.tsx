@@ -226,6 +226,29 @@ export const StudentScreen: React.FC = () => {
             </div>
           )}
 
+          {/* Smart Attendance Catch-Up Notice (If student connected with delay or had disconnect) */}
+          <div className="bg-fill-blue-soft/40 border border-fill-blue/20 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-fill-blue-soft text-fill-blue-text flex items-center justify-center flex-none">
+                <HelpCircle className="w-4 h-4" />
+              </div>
+              <div>
+                <strong className="text-xs font-bold text-fill-text block">
+                  Смысловое присутствие активно
+                </strong>
+                <span className="text-[11.5px] text-fill-text-muted">
+                  FILL AI связывает ваше время в эфире с темами конспекта. Если связь прервётся, система выделит ключевые тезисы.
+                </span>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowCatchupModal(true)}
+              className="btn btn-secondary text-xs py-1.5 px-3 flex items-center gap-1.5 whitespace-nowrap flex-none shadow-sm"
+            >
+              Что я пропустил?
+            </button>
+          </div>
+
           {/* EDITORIAL CHAPTER BLOCKS: SIDE-BY-SIDE MEDIA & NARRATIVE */}
           <div className="space-y-8">
             {visibleBlocks.map((block, idx) => {

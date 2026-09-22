@@ -9,6 +9,7 @@ from app.models.report import Report
 from app.models.ai import AiCall
 from app.models.slide import LessonSlide
 from app.models.live_task import LiveTask, LiveTaskResponse
+from app.models.attendance import StudentAttendance
 
 __all__ = [
     "Base",
@@ -28,4 +29,5 @@ __all__ = [
     "LessonSlide",
     "LiveTask",
     "LiveTaskResponse",
+    "StudentAttendance",
 ]

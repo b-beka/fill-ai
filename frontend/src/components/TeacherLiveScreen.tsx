@@ -21,14 +21,18 @@ import {
   AlertCircle,
   Users,
   CheckCheck,
-  RotateCcw
+  RotateCcw,
+  BarChart3,
+  Copy,
+  Send
 } from 'lucide-react';
 import { 
   ALL_TRACKS,
   CurriculumTrack,
   DEMO_SLIDES, 
   DEMO_TRANSCRIPT,
-  DEMO_ANKI_TSV
+  DEMO_ANKI_TSV,
+  DEMO_ATTENDANCE_REPORT
 } from '../services/mockData';
 import { NoteBlock, VisibilityMode } from '../types/lesson';
 
@@ -51,6 +55,9 @@ export const TeacherLiveScreen: React.FC<TeacherLiveScreenProps> = () => {
   
   const [showAnkiModal, setShowAnkiModal] = useState(false);
   const [showRecordingModal, setShowRecordingModal] = useState(false);
+  const [showAttendanceModal, setShowAttendanceModal] = useState(false);
+  const [sentCatchupIds, setSentCatchupIds] = useState<string[]>(['att-2']);
+  const [isCopiedWhatsApp, setIsCopiedWhatsApp] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -89,6 +96,31 @@ export const TeacherLiveScreen: React.FC<TeacherLiveScreenProps> = () => {
     a.download = `lesson_${currentTrack.lesson.id}_anki.tsv`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const handleSendCatchup = (studentId: string) => {
+    setSentCatchupIds((prev) => [...prev, studentId]);
+  };
+
+  const handleCopyWhatsApp = () => {
+    const text = `ОТЧЕТ ПО УРОКУ: ${currentTrack.lesson.title.toUpperCase()}\n` +
+      `Предмет: ${currentTrack.lesson.subject}\n` +
+      `Присутствовало: ${DEMO_ATTENDANCE_REPORT.present_students_count} из ${DEMO_ATTENDANCE_REPORT.total_students_enrolled} учеников\n` +
+      `Средний фокус внимания: ${Math.round(DEMO_ATTENDANCE_REPORT.average_focus_score * 100)}%\n` +
+      `Успешность практических задач: ${Math.round(DEMO_ATTENDANCE_REPORT.total_tasks_accuracy * 100)}%\n` +
+      `----------------------------------------\n` +
+      DEMO_ATTENDANCE_REPORT.students.map((s, idx) => {
+        const missed = s.missed_blocks.length > 0 
+          ? `Пропущенные темы: ${s.missed_blocks.map(m => `${m.title} (${m.duration_str})`).join(', ')}`
+          : 'Пропущенные темы: Все темы усвоены';
+        const catchup = sentCatchupIds.includes(s.id) ? ' [Выжимка доставлена]' : '';
+        return `${idx + 1}. ${s.student_name} — ${s.duration_minutes} мин (${s.presence_percentage}%), фокус ${Math.round(s.focus_score * 100)}%\n   ${missed}${catchup}\n   Задачи: ${s.tasks_correct}/${s.tasks_answered} верно\n   Итог: ${s.recommendation}`;
+      }).join('\n\n') +
+      `\n----------------------------------------\nСформировано автоматически платформой FILL AI.`;
+
+    navigator.clipboard.writeText(text);
+    setIsCopiedWhatsApp(true);
+    setTimeout(() => setIsCopiedWhatsApp(false), 2500);
   };
 
   const approvedCount = blocks.filter((b) => b.status === 'approved').length;
@@ -573,18 +605,30 @@ export const TeacherLiveScreen: React.FC<TeacherLiveScreenProps> = () => {
               )}
             </div>
 
-            {/* Connected Students & Moderation Metric */}
+            {/* Connected Students & Attendance Intelligence Card */}
             <div className="bg-fill-surface border border-fill-border rounded-xl p-4 sm:p-5 shadow-sm space-y-3">
-              <div>
-                <h4 className="text-[11.5px] font-bold text-fill-text-faint uppercase tracking-wider mb-1">
-                  Ученики в аудитории
-                </h4>
+              <div 
+                onClick={() => setShowAttendanceModal(true)}
+                className="cursor-pointer group"
+                title="Нажмите, чтобы открыть аналитику посещаемости и вовлечённости"
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <h4 className="text-[11.5px] font-bold text-fill-text-faint uppercase tracking-wider group-hover:text-fill-green-deep transition-colors">
+                    Ученики в аудитории
+                  </h4>
+                  <span className="text-[11px] text-fill-blue font-semibold flex items-center gap-1 group-hover:underline">
+                    <BarChart3 className="w-3.5 h-3.5" />
+                    Аналитика
+                  </span>
+                </div>
                 <div className="flex items-baseline justify-between">
                   <span className="font-head font-extrabold text-2xl text-fill-text tabular-nums flex items-center gap-2">
                     <Users className="w-5 h-5 text-fill-green-deep" />
                     28 / 30
                   </span>
-                  <span className="text-xs text-fill-text-faint">в сети</span>
+                  <span className="text-xs text-fill-green-deep font-medium bg-fill-green-soft px-2 py-0.5 rounded-full">
+                    93% в эфире
+                  </span>
                 </div>
               </div>
 
@@ -789,6 +833,269 @@ export const TeacherLiveScreen: React.FC<TeacherLiveScreenProps> = () => {
               >
                 Понятно
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Semantic Attendance & Engagement Intelligence Modal */}
+      {showAttendanceModal && (
+        <div className="fixed inset-0 bg-[#14171A]/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-fill-surface border border-fill-border rounded-xl max-w-4xl w-full p-6 sm:p-7 shadow-2xl relative max-h-[90vh] flex flex-col">
+            <button
+              onClick={() => setShowAttendanceModal(false)}
+              className="absolute top-5 right-5 text-fill-text-faint hover:text-fill-text p-1 rounded-md"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Modal Header */}
+            <div className="mb-4">
+              <div className="flex items-center gap-2">
+                <BarChart3 className="w-5 h-5 text-fill-green-deep" />
+                <h2 className="text-lg font-bold text-fill-text">
+                  Смысловая посещаемость и пульс вовлечённости
+                </h2>
+              </div>
+              <p className="text-xs text-fill-text-muted mt-1">
+                Интеллектуальный учёт присутствия с привязкой к разделам конспекта, определение пропущенных тем и экспресс-рекапы без навязчивой слежки по веб-камере.
+              </p>
+            </div>
+
+            {/* Scrollable Content Area */}
+            <div className="overflow-y-auto pr-1 space-y-6 flex-1">
+              {/* 3 Summary KPI Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                <div className="bg-fill-surface-alt border border-fill-border rounded-lg p-3.5">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-fill-text-faint block mb-1">
+                    Присутствие в эфире
+                  </span>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-xl font-extrabold text-fill-text tabular-nums">
+                      {DEMO_ATTENDANCE_REPORT.present_students_count} / {DEMO_ATTENDANCE_REPORT.total_students_enrolled}
+                    </span>
+                    <span className="text-xs font-semibold text-fill-green-deep">
+                      ({DEMO_ATTENDANCE_REPORT.average_presence_percent}%)
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-fill-text-faint mt-1 block">
+                    В среднем 41.2 мин активного участия
+                  </span>
+                </div>
+
+                <div className="bg-fill-surface-alt border border-fill-border rounded-lg p-3.5">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-fill-text-faint block mb-1">
+                    Фокус внимания
+                  </span>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-xl font-extrabold text-fill-text tabular-nums">
+                      {Math.round(DEMO_ATTENDANCE_REPORT.average_focus_score * 100)}%
+                    </span>
+                    <span className="text-xs font-semibold text-fill-blue">
+                      Высокий
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-fill-text-faint mt-1 block">
+                    По активности вкладки и взаимодействию с конспектом
+                  </span>
+                </div>
+
+                <div className="bg-fill-surface-alt border border-fill-border rounded-lg p-3.5">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-fill-text-faint block mb-1">
+                    Точность задач
+                  </span>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-xl font-extrabold text-fill-text tabular-nums">
+                      {Math.round(DEMO_ATTENDANCE_REPORT.total_tasks_accuracy * 100)}%
+                    </span>
+                    <span className="text-xs font-semibold text-fill-success">
+                      Успешно
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-fill-text-faint mt-1 block">
+                    Hands-Free опросы преподавателя
+                  </span>
+                </div>
+              </div>
+
+              {/* Attention Timeline Pulse */}
+              <div className="bg-fill-surface-alt border border-fill-border rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h3 className="text-xs font-bold text-fill-text uppercase tracking-wider">
+                      Пульс внимания группы (Attention Timeline)
+                    </h3>
+                    <p className="text-[11px] text-fill-text-faint">
+                      Динамика концентрации класса по 5-минутным интервалам урока
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3 text-[11px] text-fill-text-faint">
+                    <span className="flex items-center gap-1">
+                      <span className="w-2.5 h-2.5 rounded-sm bg-fill-green-deep" />
+                      &gt;85% Фокус
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span className="w-2.5 h-2.5 rounded-sm bg-fill-warning" />
+                      &lt;75% Просадка
+                    </span>
+                  </div>
+                </div>
+
+                {/* Pulse Bars */}
+                <div className="grid grid-cols-9 gap-2 items-end h-24 pt-2 border-b border-fill-border pb-2">
+                  {DEMO_ATTENDANCE_REPORT.pulse.map((p) => {
+                    const isWarning = p.attention_percent < 75;
+                    return (
+                      <div key={p.minute} className="flex flex-col items-center gap-1 group relative">
+                        <div
+                          className={`w-full rounded-t transition-all ${
+                            isWarning ? 'bg-fill-warning/80 hover:bg-fill-warning' : 'bg-fill-green-deep hover:opacity-90'
+                          }`}
+                          style={{ height: `${p.attention_percent * 0.75}px` }}
+                          title={`Минута ${p.minute}: ${p.attention_percent}% активного внимания (${p.active_students_count} учеников)`}
+                        />
+                        <span className="text-[10px] font-mono text-fill-text-faint">
+                          {p.minute}м
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Students Semantic Attendance Table */}
+              <div>
+                <h3 className="text-xs font-bold text-fill-text uppercase tracking-wider mb-2.5">
+                  Детализация по ученикам
+                </h3>
+                <div className="border border-fill-border rounded-lg overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-fill-surface-alt border-b border-fill-border text-fill-text-faint font-semibold">
+                        <tr>
+                          <th className="py-2.5 px-3">Ученик</th>
+                          <th className="py-2.5 px-3">В эфире</th>
+                          <th className="py-2.5 px-3">Фокус</th>
+                          <th className="py-2.5 px-3">Темы конспекта</th>
+                          <th className="py-2.5 px-3">Задачи</th>
+                          <th className="py-2.5 px-3 text-right">Действие</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-fill-border">
+                        {DEMO_ATTENDANCE_REPORT.students.map((s) => {
+                          const hasMissed = s.missed_blocks.length > 0;
+                          const isCatchupSent = sentCatchupIds.includes(s.id);
+
+                          return (
+                            <tr key={s.id} className="hover:bg-fill-surface-alt/50 transition-colors">
+                              <td className="py-3 px-3">
+                                <div className="font-bold text-fill-text">{s.student_name}</div>
+                                <div className="text-[11px] text-fill-text-faint">
+                                  {s.status === 'active' && <span className="text-fill-success font-medium">В сети</span>}
+                                  {s.status === 'idle' && <span className="text-fill-warning font-medium">Вкладка в фоне</span>}
+                                  {s.status === 'disconnected' && <span className="text-fill-danger font-medium">Отключен</span>}
+                                </div>
+                              </td>
+                              <td className="py-3 px-3 font-mono">
+                                <span className="font-bold text-fill-text">{s.duration_minutes}м</span>
+                                <span className="text-fill-text-faint ml-1">({s.presence_percentage}%)</span>
+                              </td>
+                              <td className="py-3 px-3">
+                                <span className="font-mono font-bold text-fill-text">
+                                  {Math.round(s.focus_score * 100)}%
+                                </span>
+                              </td>
+                              <td className="py-3 px-3 max-w-[220px]">
+                                {hasMissed ? (
+                                  <div className="space-y-1">
+                                    {s.missed_blocks.map((mb, mIdx) => (
+                                      <span
+                                        key={mIdx}
+                                        className="inline-block bg-fill-warning-soft text-fill-warning border border-fill-warning/30 rounded px-1.5 py-0.5 text-[10.5px] font-medium leading-tight mr-1"
+                                      >
+                                        Пропуск: {mb.title} ({mb.duration_str})
+                                      </span>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <span className="text-fill-success font-medium text-[11px] flex items-center gap-1">
+                                    <Check className="w-3 h-3" />
+                                    Все темы усвоены
+                                  </span>
+                                )}
+                              </td>
+                              <td className="py-3 px-3 font-mono">
+                                <span className={s.tasks_correct > 0 ? 'text-fill-success font-bold' : 'text-fill-text-muted'}>
+                                  {s.tasks_correct}
+                                </span>
+                                <span className="text-fill-text-faint">/{s.tasks_answered}</span>
+                              </td>
+                              <td className="py-3 px-3 text-right">
+                                {hasMissed ? (
+                                  isCatchupSent ? (
+                                    <span className="badge bg-fill-success-soft text-fill-success text-[10.5px] font-bold">
+                                      Рекап отправлен
+                                    </span>
+                                  ) : (
+                                    <button
+                                      onClick={() => handleSendCatchup(s.id)}
+                                      className="btn btn-secondary text-[11px] py-1 px-2.5 inline-flex items-center gap-1"
+                                      title="Сформировать и доставить 3-тезисную выжимку пропущенного материала"
+                                    >
+                                      <Send className="w-3 h-3" />
+                                      Отправить выжимку
+                                    </button>
+                                  )
+                                ) : (
+                                  <span className="text-fill-text-faint text-[11px]">—</span>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer Actions */}
+            <div className="mt-5 pt-4 border-t border-fill-border flex flex-wrap items-center justify-between gap-3">
+              <div className="text-xs text-fill-text-faint">
+                Сформировано автоматически по таймкодам конспекта и микро-опросам FILL AI.
+              </div>
+
+              <div className="flex items-center gap-2.5">
+                <button
+                  onClick={handleCopyWhatsApp}
+                  className={`btn text-xs py-2 px-3.5 flex items-center gap-1.5 shadow-sm transition-all ${
+                    isCopiedWhatsApp
+                      ? 'bg-fill-success text-white'
+                      : 'btn-secondary'
+                  }`}
+                  title="Скопировать готовый текстовый отчет для отправки родителям или в чат группы"
+                >
+                  {isCopiedWhatsApp ? (
+                    <>
+                      <Check className="w-3.5 h-3.5" />
+                      Скопировано в буфер!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5" />
+                      Скопировать отчёт для WhatsApp / Telegram
+                    </>
+                  )}
+                </button>
+
+                <button
+                  onClick={() => setShowAttendanceModal(false)}
+                  className="btn btn-primary text-xs py-2 px-4"
+                >
+                  Готово
+                </button>
+              </div>
             </div>
           </div>
         </div>
