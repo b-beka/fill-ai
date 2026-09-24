@@ -1,42 +1,60 @@
+@import '@fontsource/unbounded/400.css';
+@import '@fontsource/unbounded/600.css';
+@import '@fontsource/unbounded/700.css';
+@import '@fontsource/onest/400.css';
+@import '@fontsource/onest/500.css';
+@import '@fontsource/onest/600.css';
+@import '@fontsource/onest/700.css';
+@import '@fontsource/caveat/600.css';
+@import '@fontsource/caveat/700.css';
 @import 'katex/dist/katex.min.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* 
-  ARCHITECTURAL DESIGN SYSTEM (NO GRADIENTS, NO AI-SLOP, NO SPECIAL SYMBOLS)
-  Clean Swiss typography, crisp hairline borders, solid functional colors.
+/*
+  FILL AI — ДИЗАЙН-СИСТЕМА: «ТЕТРАДЬ · ЛИНЕЙКА · КРУГИ»
+  Нео-брутализм, тактильная бумага, чернильные контуры 2px, жесткие тени 4px/8px.
 */
 
 :root {
-  --bg: #07080a;
-  --surface: #0e1014;
-  --surface-alt: #15181f;
-  --surface-hover: #1c202a;
-  --border: rgba(255, 255, 255, 0.12);
-  --border-strong: rgba(255, 255, 255, 0.28);
-  --text: #ffffff;
-  --text-muted: #8e929b;
-  --text-faint: #5a5e68;
-  
-  --accent-action: #ffffff;
-  --accent-action-text: #000000;
-  --accent-alert: #ef4444;
-  --accent-success: #10b981;
-  --accent-warning: #f59e0b;
+  --color-paper: #FBF7EA;
+  --color-paper-2: #F2ECD6;
+  --color-ink: #0E1A4B;
+  --color-grid: #C7D6F2;
+  --color-blue: #2340E0;
+  --color-sky: #BBD4FF;
+  --color-sun: #FFC72C;
+  --color-sun-soft: #FFE9A3;
+  --color-pen-red: #E5383B;
+  --color-stamp-green: #1F9D63;
+  --color-board: #0B1440;
+  --color-chalk: #F4F1E6;
 
-  --font-display: 'Space Grotesk', sans-serif;
-  --font-body: 'Inter', -apple-system, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
-  --font-serif: 'DM Serif Display', serif;
+  --shadow-hard: 4px 4px 0 0 var(--color-ink);
+  --shadow-hard-lg: 8px 8px 0 0 var(--color-ink);
+  --radius-card: 20px;
+  --radius-pill: 999px;
+
+  color-scheme: light;
+}
+
+[data-theme="board"] {
+  --color-paper: #0B1440;
+  --color-paper-2: #142055;
+  --color-ink: #F4F1E6;
+  --color-grid: #1D2D73;
+  --shadow-hard: 4px 4px 0 0 var(--color-chalk);
+  --shadow-hard-lg: 8px 8px 0 0 var(--color-chalk);
 
   color-scheme: dark;
 }
 
 html, body {
-  background: #07080a !important;
-  color: #ffffff !important;
-  font-family: var(--font-body);
+  background-color: #FBF7EA;
+  color: #0E1A4B;
+  font-family: 'Onest', -apple-system, sans-serif;
   margin: 0;
   padding: 0;
   -webkit-font-smoothing: antialiased;
@@ -45,293 +63,82 @@ html, body {
   overflow-x: hidden;
 }
 
+[data-theme="board"] body {
+  background-color: #0B1440;
+  color: #F4F1E6;
+}
+
 html {
   scroll-behavior: smooth;
 }
 
-h1, h2, h3, h4, h5 {
-  font-family: var(--font-display);
-  letter-spacing: -0.03em;
-  font-weight: 500;
+/* Typography Defaults */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Unbounded', sans-serif;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+  color: inherit;
 }
 
 ::selection {
-  background: #2A46C7;
-  color: #ffffff;
+  background: #FFC72C;
+  color: #0E1A4B;
 }
 
 :focus-visible {
-  outline: 2px solid #ffffff;
+  outline: 2px solid #0E1A4B;
   outline-offset: 2px;
 }
 
-/* Typography Helpers */
-.font-display {
-  font-family: var(--font-display);
-}
-.font-mono-tag {
-  font-family: var(--font-mono);
-}
-.font-serif {
-  font-family: var(--font-serif);
+/* Custom Fonts Classes */
+.font-heading {
+  font-family: 'Unbounded', sans-serif;
 }
 
-/* Solid Clean Buttons (Zero Gradients) */
-.btn-solid {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background-color: #ffffff;
-  color: #07080a;
-  font-weight: 600;
-  font-size: 13px;
-  line-height: 1;
-  border-radius: 6px;
-  padding: 10px 18px;
-  border: 1px solid #ffffff;
-  cursor: pointer;
-  transition: opacity 0.15s ease, transform 0.1s ease;
-  white-space: nowrap;
-}
-.btn-solid:hover {
-  opacity: 0.9;
-}
-.btn-solid:active {
-  transform: scale(0.98);
+.font-body {
+  font-family: 'Onest', sans-serif;
 }
 
-.btn-outline {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background-color: transparent;
-  color: #ffffff;
-  font-weight: 500;
-  font-size: 13px;
-  line-height: 1;
-  border-radius: 6px;
-  padding: 10px 18px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  cursor: pointer;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
-  white-space: nowrap;
-}
-.btn-outline:hover {
-  background-color: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.5);
-}
-.btn-outline:active {
-  transform: scale(0.98);
+.font-hand {
+  font-family: 'Caveat', cursive;
 }
 
-.btn-ghost {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background-color: transparent;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 12px;
-  font-weight: 500;
-  padding: 6px 12px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  transition: color 0.15s ease, background-color 0.15s ease;
-}
-.btn-ghost:hover {
-  color: #ffffff;
-  background-color: rgba(255, 255, 255, 0.06);
+/* Tactile Neo-Brutalist Classes */
+.border-ink {
+  border: 2px solid var(--color-ink);
 }
 
-/* FILL AI Signature Solid Brand Buttons */
-.btn-brand-blue {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background-color: #2A46C7;
-  color: #ffffff;
-  font-weight: 600;
-  font-size: 13px;
-  line-height: 1;
-  border-radius: 6px;
-  padding: 10px 18px;
-  border: 1px solid #2A46C7;
-  cursor: pointer;
-  transition: opacity 0.15s ease, transform 0.1s ease;
-  white-space: nowrap;
-}
-.btn-brand-blue:hover {
-  opacity: 0.92;
-}
-.btn-brand-blue:active {
-  transform: scale(0.98);
+.border-ink-thick {
+  border: 3px solid var(--color-ink);
 }
 
-.btn-acid-green {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background-color: #AEDB00;
-  color: #111318;
-  font-weight: 700;
-  font-size: 13px;
-  line-height: 1;
-  border-radius: 6px;
-  padding: 10px 18px;
-  border: 1px solid #AEDB00;
-  cursor: pointer;
-  transition: opacity 0.15s ease, transform 0.1s ease;
-  white-space: nowrap;
-}
-.btn-acid-green:hover {
-  opacity: 0.92;
-}
-.btn-acid-green:active {
-  transform: scale(0.98);
+.shadow-hard {
+  box-shadow: 4px 4px 0 0 var(--color-ink);
 }
 
-.tag-brand-blue {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #ffffff;
-  background-color: #2A46C7;
-  padding: 4px 10px;
-  border-radius: 4px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-weight: 600;
+.shadow-hard-lg {
+  box-shadow: 8px 8px 0 0 var(--color-ink);
 }
 
-.tag-acid-green {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #111318;
-  background-color: #AEDB00;
-  padding: 4px 10px;
-  border-radius: 4px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-weight: 700;
+.shadow-hard-sun {
+  box-shadow: 4px 4px 0 0 var(--color-sun);
 }
 
-
-/* Crisp Clean Technical Tag (Zero Gradients, Zero Brackets) */
-.tech-label {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.75);
-  background-color: #12151b;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  padding: 5px 12px;
-  border-radius: 4px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+/* Button Press Effect: 4px displacement into shadow */
+.btn-press {
+  transition: transform 0.12s cubic-bezier(0.76, 0, 0.24, 1), box-shadow 0.12s cubic-bezier(0.76, 0, 0.24, 1);
+}
+.btn-press:active {
+  transform: translate(3px, 3px);
+  box-shadow: 1px 1px 0 0 var(--color-ink);
 }
 
-/* Nav Item */
-.nav-tab {
-  height: 34px;
-  padding: 0 14px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 500;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: rgba(255, 255, 255, 0.6);
-  background: transparent;
-  border: 1px solid transparent;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  text-decoration: none;
-  white-space: nowrap;
+/* Respect Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
-.nav-tab:hover {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.06);
-}
-.nav-tab.active {
-  color: #ffffff;
-  background: #171a22;
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
-/* Scrim: Pure clean darkness on video */
-.video-scrim {
-  position: absolute;
-  inset: 0;
-  background: rgba(7, 8, 10, 0.72);
-  pointer-events: none;
-}
-
-/* Backward compatibility aliases */
-.echoid-tag {
-  @apply tech-label;
-}
-.btn-liquid-solid {
-  @apply btn-solid;
-}
-.btn-liquid-ghost {
-  @apply btn-outline;
-}
-
-/* Academic & Engineering Textures */
-.bg-academic-grid {
-  background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
-  background-size: 32px 32px;
-}
-
-.bg-academic-dots {
-  background-image: radial-gradient(rgba(255, 255, 255, 0.12) 1.2px, transparent 1.2px);
-  background-size: 24px 24px;
-}
-
-.bg-acid-dots {
-  background-image: radial-gradient(rgba(174, 219, 0, 0.3) 1.5px, transparent 1.5px);
-  background-size: 20px 20px;
-}
-
-.bg-blue-dots {
-  background-image: radial-gradient(rgba(42, 70, 199, 0.35) 1.5px, transparent 1.5px);
-  background-size: 20px 20px;
-}
-
-/* Millimeter Ruler Track */
-.academic-ruler {
-  height: 20px;
-  background-image: repeating-linear-gradient(
-    to right,
-    rgba(255, 255, 255, 0.3) 0,
-    rgba(255, 255, 255, 0.3) 1px,
-    transparent 1px,
-    transparent 10px
-  );
-  position: relative;
-}
-
-.academic-ruler-major {
-  background-image: repeating-linear-gradient(
-    to right,
-    rgba(174, 219, 0, 0.5) 0,
-    rgba(174, 219, 0, 0.5) 1px,
-    transparent 1px,
-    transparent 50px
-  );
-}
-
-

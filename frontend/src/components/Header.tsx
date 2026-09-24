@@ -2,7 +2,7 @@ import React from 'react';
 import { LogOut, ArrowLeft } from 'lucide-react';
 import { User, UserRole } from '../types/auth';
 
-export type ScreenId = 'landing' | 'auth' | 'live' | 'student' | 'manager';
+export type ScreenId = 'landing' | 'auth' | 'live' | 'student' | 'manager' | 'devkit';
 
 interface HeaderProps {
   currentScreen: ScreenId;

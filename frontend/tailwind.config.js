@@ -4,48 +4,49 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
-  darkMode: ['class', '[data-theme="dark"]'],
+  darkMode: ['class', '[data-theme="board"]'],
   theme: {
     extend: {
       colors: {
-        'brand-blue': '#2A46C7',
-        'acid-green': '#AEDB00',
-        'graphite': '#111318',
-        'cream': '#F5F2E8',
-        'fill-bg': 'var(--bg)',
-        'fill-surface': 'var(--surface)',
-        'fill-surface-alt': 'var(--surface-alt)',
-        'fill-border': 'var(--border)',
-        'fill-text': 'var(--text)',
-        'fill-text-muted': 'var(--text-muted)',
-        'fill-text-faint': 'var(--text-faint)',
-        'fill-blue': '#2A46C7',
-        'fill-blue-text': '#FFFFFF',
-        'fill-blue-soft': '#1e3399',
-        'fill-green': '#AEDB00',
-        'fill-green-deep': '#88ab00',
-        'fill-green-soft': '#d9f75b',
-        'fill-success': '#AEDB00',
-        'fill-success-soft': '#d9f75b',
-        'fill-warning': '#f59e0b',
-        'fill-warning-soft': 'var(--warning-soft)',
-        'fill-danger': '#ef4444',
-        'fill-danger-soft': 'var(--danger-soft)',
+        /* Тетрадь и чернила */
+        'paper': '#FBF7EA',
+        'paper-2': '#F2ECD6',
+        'ink': '#0E1A4B',
+        'grid': '#C7D6F2',
+
+        /* Цвета бренда FILL */
+        'blue': '#2340E0',
+        'sky': '#BBD4FF',
+        'sun': '#FFC72C',
+        'sun-soft': '#FFE9A3',
+
+        /* Смысловые акценты */
+        'pen-red': '#E5383B',
+        'stamp-green': '#1F9D63',
+
+        /* Режим «Доска» (для эфира преподавателя) */
+        'board': '#0B1440',
+        'chalk': '#F4F1E6',
       },
       fontFamily: {
-        display: ['Space Grotesk', 'sans-serif'],
-        body: ['Inter', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
-        serif: ['DM Serif Display', 'serif'],
+        heading: ['Unbounded', 'sans-serif'],
+        body: ['Onest', 'sans-serif'],
+        sans: ['Onest', 'sans-serif'],
+        hand: ['Caveat', 'cursive'],
       },
       borderRadius: {
-        'sm': 'var(--radius-sm)',
-        'md': 'var(--radius-md)',
-        'lg': 'var(--radius-lg)',
+        'card': '20px',
+        'pill': '999px',
       },
       boxShadow: {
-        'sm': 'var(--shadow-sm)',
-        'md': 'var(--shadow-md)',
+        'hard': '4px 4px 0 0 #0E1A4B',
+        'hard-lg': '8px 8px 0 0 #0E1A4B',
+        'hard-sun': '4px 4px 0 0 #FFC72C',
+        'hard-board': '4px 4px 0 0 #F4F1E6',
+        'hard-board-lg': '8px 8px 0 0 #F4F1E6',
+      },
+      borderWidth: {
+        '3': '3px',
       }
     },
   },

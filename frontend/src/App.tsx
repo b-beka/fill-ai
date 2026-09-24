@@ -5,6 +5,7 @@ import { AuthScreen } from './components/AuthScreen';
 import { TeacherLiveScreen } from './components/TeacherLiveScreen';
 import { StudentScreen } from './components/StudentScreen';
 import { LessonsManager } from './components/LessonsManager';
+import { DevKit } from './components/DevKit';
 import { api } from './services/api';
 import { User, UserRole } from './types/auth';
 
@@ -92,7 +93,24 @@ export const App: React.FC = () => {
         {currentScreen === 'manager' && (
           <LessonsManager onBackendStatusChange={setIsBackendConnected} />
         )}
+
+        {currentScreen === 'devkit' && (
+          <DevKit onBackToApp={() => setCurrentScreen('landing')} />
+        )}
       </main>
+
+      {/* Быстрый доступ к витрине компонентов дизайн-системы для разработчика / жюри */}
+      {currentScreen !== 'devkit' && (
+        <div className="fixed bottom-3 right-3 z-50">
+          <button
+            onClick={() => setCurrentScreen('devkit')}
+            className="px-3 py-1.5 rounded-full bg-sun text-ink font-heading font-bold text-[11px] border-2 border-ink shadow-hard hover:scale-105 active:scale-95 transition-all select-none"
+            title="Открыть витрину компонентов новой дизайн-системы"
+          >
+            📐 /dev/kit
+          </button>
+        </div>
+      )}
     </div>
   );
 };
