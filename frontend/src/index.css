@@ -1,3 +1,4 @@
+@import 'katex/dist/katex.min.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -286,4 +287,51 @@ h1, h2, h3, h4, h5 {
 .btn-liquid-ghost {
   @apply btn-outline;
 }
+
+/* Academic & Engineering Textures */
+.bg-academic-grid {
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.bg-academic-dots {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.12) 1.2px, transparent 1.2px);
+  background-size: 24px 24px;
+}
+
+.bg-acid-dots {
+  background-image: radial-gradient(rgba(174, 219, 0, 0.3) 1.5px, transparent 1.5px);
+  background-size: 20px 20px;
+}
+
+.bg-blue-dots {
+  background-image: radial-gradient(rgba(42, 70, 199, 0.35) 1.5px, transparent 1.5px);
+  background-size: 20px 20px;
+}
+
+/* Millimeter Ruler Track */
+.academic-ruler {
+  height: 20px;
+  background-image: repeating-linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0.3) 0,
+    rgba(255, 255, 255, 0.3) 1px,
+    transparent 1px,
+    transparent 10px
+  );
+  position: relative;
+}
+
+.academic-ruler-major {
+  background-image: repeating-linear-gradient(
+    to right,
+    rgba(174, 219, 0, 0.5) 0,
+    rgba(174, 219, 0, 0.5) 1px,
+    transparent 1px,
+    transparent 50px
+  );
+}
+
 

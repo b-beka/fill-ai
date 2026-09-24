@@ -10,8 +10,10 @@
   },
   "dependencies": {
     "@types/canvas-confetti": "^1.9.0",
+    "@types/katex": "^0.16.8",
     "canvas-confetti": "^1.9.4",
     "framer-motion": "^13.4.3",
+    "katex": "^0.18.9",
     "lucide-react": "^0.453.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
