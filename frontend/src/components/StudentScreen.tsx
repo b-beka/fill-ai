@@ -1,33 +1,57 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
+  Play, 
+  Pause, 
+  Volume2, 
+  VolumeX, 
+  Maximize2, 
+  Radio, 
   Clock, 
   ShieldCheck, 
-  Volume2, 
+  HelpCircle, 
+  Sparkles, 
+  Send, 
+  MessageSquare, 
+  CheckCircle2, 
+  AlertCircle, 
   Code, 
   FileText, 
-  Image as ImageIcon,
-  Smartphone,
-  Maximize2,
-  HelpCircle,
-  Play,
-  Pause,
+  Image as ImageIcon, 
+  RotateCcw,
   X
 } from 'lucide-react';
 import { ALL_TRACKS, CurriculumTrack } from '../services/mockData';
 
-export type StudentDemoState = 'notes' | 'question';
+export type QuizTab = 'quiz' | 'ask';
 
 export const StudentScreen: React.FC = () => {
   const [currentTrack, setCurrentTrack] = useState<CurriculumTrack>(ALL_TRACKS[0]);
-  const [studentState, setStudentState] = useState<StudentDemoState>('notes');
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
-  const [viewMode, setViewMode] = useState<'mobile' | 'desktop'>('desktop');
   const [isPlayingAudio, setIsPlayingAudio] = useState<string | null>(null);
   const [showCatchupModal, setShowCatchupModal] = useState(false);
+  const [activeSideTab, setActiveSideTab] = useState<QuizTab>('quiz');
+  
+  // Video player interactive states
+  const [isVideoPlaying, setIsVideoPlaying] = useState(true);
+  const [isMuted, setIsMuted] = useState(false);
+  const [videoViewMode, setVideoViewMode] = useState<'slide' | 'pip'>('pip');
+  const [studentQuestionInput, setStudentQuestionInput] = useState('');
+  const [submittedQuestions, setSubmittedQuestions] = useState<string[]>([
+    'Связан ли вторично-активный транспорт с гидролизом АТФ напрямую?',
+  ]);
+  const [countdown, setCountdown] = useState(24);
 
-  // In moderated mode (Sprint 1), students only see approved blocks
+  // In moderated mode, students only see approved blocks
   const visibleBlocks = currentTrack.blocks.filter((b) => b.status === 'approved');
+
+  // Question countdown simulation
+  useEffect(() => {
+    if (countdown > 0 && !isAnswered) {
+      const timer = setInterval(() => setCountdown((c) => Math.max(0, c - 1)), 1000);
+      return () => clearInterval(timer);
+    }
+  }, [countdown, isAnswered]);
 
   const handleSelectOption = (id: string) => {
     setSelectedOptionId(id);
@@ -38,6 +62,14 @@ export const StudentScreen: React.FC = () => {
     setCurrentTrack(track);
     setSelectedOptionId(null);
     setIsAnswered(false);
+    setCountdown(28);
+  };
+
+  const handleSendQuestion = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!studentQuestionInput.trim()) return;
+    setSubmittedQuestions((prev) => [studentQuestionInput.trim(), ...prev]);
+    setStudentQuestionInput('');
   };
 
   const currentOption = currentTrack.live_question.options.find(
@@ -45,211 +77,461 @@ export const StudentScreen: React.FC = () => {
   );
 
   return (
-    <div className="py-8 px-4 sm:px-6 max-w-6xl mx-auto flex flex-col items-center gap-6 bg-fill-bg min-h-[calc(100vh-60px)]">
-      {/* Top Header & Multi-Subject Selector */}
-      <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-fill-border pb-4">
-        <div className="flex flex-col">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-fill-green-deep">
-            Интерфейс ученика
-          </span>
-          <h2 className="text-lg font-bold text-fill-text">
-            Живой конспект и интерактивные задания
-          </h2>
-        </div>
-
-        {/* Universal Subject Switcher */}
-        <div className="flex items-center gap-1.5 bg-fill-surface-alt p-1 rounded-lg border border-fill-border overflow-x-auto max-w-full">
-          {ALL_TRACKS.map((track) => (
-            <button
-              key={track.id}
-              onClick={() => handleTrackChange(track)}
-              className={`text-xs font-semibold py-1.5 px-3 rounded-md transition-all whitespace-nowrap ${
-                currentTrack.id === track.id
-                  ? 'bg-fill-surface text-fill-text shadow-sm border border-fill-border'
-                  : 'text-fill-text-muted hover:text-fill-text'
-              }`}
-            >
-              {track.name.split(':')[0]}
-            </button>
-          ))}
-        </div>
-
-        {/* View Mode Toggle & Catch-up Button */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowCatchupModal(true)}
-            className="btn btn-secondary text-xs py-1.5 px-3 flex items-center gap-1.5"
-            title="Получить сжатую выжимку пропущенного материала"
-          >
-            <HelpCircle className="w-3.5 h-3.5 text-fill-green-deep" />
-            <span>Что я пропустил?</span>
-          </button>
-
-          <div className="hidden sm:flex bg-fill-surface-alt p-0.5 rounded-md border border-fill-border">
-            <button
-              onClick={() => setViewMode('desktop')}
-              className={`p-1.5 rounded text-xs flex items-center gap-1 ${
-                viewMode === 'desktop' ? 'bg-fill-surface text-fill-text shadow-sm' : 'text-fill-text-muted'
-              }`}
-              title="Книжный вид (Ноутбук / Планшет)"
-            >
-              <Maximize2 className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => setViewMode('mobile')}
-              className={`p-1.5 rounded text-xs flex items-center gap-1 ${
-                viewMode === 'mobile' ? 'bg-fill-surface text-fill-text shadow-sm' : 'text-fill-text-muted'
-              }`}
-              title="Мобильный вид (Смартфон)"
-            >
-              <Smartphone className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* State Switcher (Конспект vs Задача от учителя) */}
-      <div className="flex gap-2">
-        <button
-          onClick={() => setStudentState('notes')}
-          className={`text-xs font-bold py-1.5 px-4 rounded-full border transition-all ${
-            studentState === 'notes'
-              ? 'bg-fill-text text-fill-surface border-fill-text'
-              : 'bg-fill-surface text-fill-text-muted border-fill-border hover:text-fill-text'
-          }`}
-        >
-          Книжный конспект ({visibleBlocks.length} раздела)
-        </button>
-        <button
-          onClick={() => setStudentState('question')}
-          className={`text-xs font-bold py-1.5 px-4 rounded-full border flex items-center gap-1.5 transition-all ${
-            studentState === 'question'
-              ? 'bg-fill-green-deep text-white border-fill-green-deep'
-              : 'bg-fill-surface text-fill-green-deep border-fill-green-deep/30 hover:bg-fill-green-soft'
-          }`}
-        >
-          <span className="w-2 h-2 rounded-full bg-fill-green animate-pulse" />
-          Задача от учителя
-        </button>
-      </div>
-
-      {/* ========================================================= */}
-      {/* DESKTOP / TABLET EDITORIAL BOOK LAYOUT                     */}
-      {/* ========================================================= */}
-      {viewMode === 'desktop' ? (
-        <div className="w-full bg-fill-surface rounded-xl border border-fill-border shadow-sm p-6 sm:p-8 flex flex-col gap-6">
-          {/* Header of the Book Chapter */}
-          <div className="border-b border-fill-border pb-4 flex items-center justify-between">
+    <div className="w-full bg-[#000000] text-white min-h-[calc(100vh-64px)] pb-16">
+      
+      {/* ========================================================================= */}
+      {/* 1. TOP SUB-HEADER: STREAM META & SUBJECT SWITCHER                        */}
+      {/* ========================================================================= */}
+      <div className="border-b border-white/10 bg-[#07080a] sticky top-[64px] z-30 px-4 sm:px-8 py-3">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-3">
+          
+          {/* Left: Stream Info */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-red-950/40 border border-red-500/40 text-[11px] font-mono font-bold text-red-400">
+              <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+              <span>LIVE ЭФИР</span>
+            </div>
             <div>
-              <span className="text-[11px] font-semibold text-fill-text-faint tracking-wider uppercase">
-                {currentTrack.category} · {currentTrack.lesson.subject}
-              </span>
-              <h1 className="text-xl sm:text-2xl font-bold font-head text-fill-text mt-0.5">
+              <h1 className="text-sm sm:text-base font-bold font-head text-white truncate max-w-md">
                 {currentTrack.lesson.title}
               </h1>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs bg-fill-success-soft text-fill-success font-semibold px-2 py-0.5 rounded border border-fill-success/20 flex items-center gap-1">
-                <ShieldCheck className="w-3.5 h-3.5" />
-                Проверено преподавателем
-              </span>
+              <div className="text-[11px] text-[#9a9a9a] flex items-center gap-2">
+                <span>{currentTrack.category}</span>
+                <span>•</span>
+                <span className="text-emerald-400 font-medium">28 учеников в эфире</span>
+              </div>
             </div>
           </div>
 
-          {/* ACTIVE QUESTION BANNER IF IN QUESTION STATE */}
-          {studentState === 'question' && (
-            <div className="bg-fill-surface-alt border-2 border-fill-green-deep/40 rounded-xl p-5 shadow-sm">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-fill-green-deep flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-fill-green-deep" />
-                  {currentTrack.live_question.eyebrow}
-                </span>
-                <span className="text-xs font-bold text-fill-text flex items-center gap-1 font-mono">
-                  <Clock className="w-3.5 h-3.5 text-fill-text-muted" />
-                  Осталось 00:22
-                </span>
-              </div>
-
-              <h3 className="text-base sm:text-lg font-bold text-fill-text mb-4">
-                {currentTrack.live_question.text}
-              </h3>
-
-              {/* Options Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                {currentTrack.live_question.options.map((opt) => {
-                  const isChosen = selectedOptionId === opt.id;
-                  return (
-                    <button
-                      key={opt.id}
-                      onClick={() => handleSelectOption(opt.id)}
-                      disabled={isAnswered}
-                      className={`text-left p-3.5 rounded-lg border text-xs sm:text-sm font-medium transition-all flex items-start gap-3 ${
-                        isChosen
-                          ? opt.is_correct
-                            ? 'border-fill-success bg-fill-success-soft text-fill-text'
-                            : 'border-fill-warning bg-fill-warning-soft text-fill-text'
-                          : 'border-fill-border bg-fill-surface hover:border-fill-text-faint text-fill-text'
-                      }`}
-                    >
-                      <span
-                        className={`w-5 h-5 rounded-full flex-none flex items-center justify-center text-[11px] font-bold border ${
-                          isChosen
-                            ? opt.is_correct
-                              ? 'border-fill-success bg-fill-success text-white'
-                              : 'border-fill-warning bg-fill-warning text-white'
-                            : 'border-fill-border text-fill-text-muted'
-                        }`}
-                      >
-                        {opt.id}
-                      </span>
-                      <span>{opt.text}</span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Instant Explanatory Feedback (0ms distractor explanation) */}
-              {isAnswered && currentOption && (
-                <div
-                  className={`mt-4 p-4 rounded-lg border text-xs sm:text-sm leading-relaxed ${
-                    currentOption.is_correct
-                      ? 'bg-fill-success-soft border-fill-success/30 text-fill-text'
-                      : 'bg-fill-warning-soft border-fill-warning/40 text-fill-text'
+          {/* Center / Right: Track Selector & Actions */}
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+            {/* Subject Selector */}
+            <div className="flex items-center gap-1 bg-[#121417] p-1 rounded-lg border border-white/10">
+              {ALL_TRACKS.map((t) => (
+                <button
+                  key={t.id}
+                  onClick={() => handleTrackChange(t)}
+                  className={`text-xs font-semibold py-1 px-2.5 rounded-md transition-all whitespace-nowrap ${
+                    currentTrack.id === t.id
+                      ? 'bg-white/15 text-white shadow-sm border border-white/20'
+                      : 'text-[#9a9a9a] hover:text-white'
                   }`}
                 >
-                  <strong className="font-bold">
-                    {currentOption.is_correct ? 'Правильный ответ: ' : 'Пояснение к ошибке: '}
-                  </strong>
-                  <span>{currentOption.explanation}</span>
-                </div>
-              )}
+                  {t.name.split(':')[0]}
+                </button>
+              ))}
             </div>
-          )}
 
-          {/* Smart Attendance Catch-Up Notice (If student connected with delay or had disconnect) */}
-          <div className="bg-fill-blue-soft/40 border border-fill-blue/20 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-fill-blue-soft text-fill-blue-text flex items-center justify-center flex-none">
-                <HelpCircle className="w-4 h-4" />
-              </div>
-              <div>
-                <strong className="text-xs font-bold text-fill-text block">
-                  Смысловое присутствие активно
-                </strong>
-                <span className="text-[11.5px] text-fill-text-muted">
-                  FILL AI связывает ваше время в эфире с темами конспекта. Если связь прервётся, система выделит ключевые тезисы.
-                </span>
-              </div>
-            </div>
+            {/* "What did I miss?" Smart Catchup */}
             <button
               onClick={() => setShowCatchupModal(true)}
-              className="btn btn-secondary text-xs py-1.5 px-3 flex items-center gap-1.5 whitespace-nowrap flex-none shadow-sm"
+              className="btn-liquid-ghost text-xs h-8 px-3 flex items-center gap-1.5"
+              title="Получить смысловую выжимку пропущенных фрагментов лекции"
             >
-              Что я пропустил?
+              <HelpCircle className="w-3.5 h-3.5 text-sky-400" />
+              <span className="hidden sm:inline">Что я пропустил?</span>
+              <span className="sm:hidden">Выжимка</span>
             </button>
           </div>
 
-          {/* EDITORIAL CHAPTER BLOCKS: SIDE-BY-SIDE MEDIA & NARRATIVE */}
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 mt-6">
+        
+        {/* ========================================================================= */}
+        {/* 2. YOUTUBE-STYLE CINEMA GRID: 16:9 PLAYER (LEFT) + LIVE QUIZ/ASK (RIGHT)  */}
+        {/* ========================================================================= */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          
+          {/* ========================================================== */}
+          {/* LEFT: 16:9 CINEMA LECTURE BROADCAST PLAYER (Col 1..8)      */}
+          {/* ========================================================== */}
+          <div className="lg:col-span-8 flex flex-col gap-3">
+            
+            <div 
+              className="relative w-full aspect-video rounded-2xl bg-[#050608] border border-white/15 overflow-hidden shadow-2xl flex flex-col justify-between group select-none"
+              style={{
+                boxShadow: '0 20px 50px rgba(0,0,0,0.8), 0 0 30px rgba(255,255,255,0.03)'
+              }}
+            >
+              {/* Screen Content: Live Visual Stream Simulation */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                {/* Background Tech Mesh */}
+                <div className="absolute inset-0 bg-gradient-to-tr from-[#060e18] via-[#090b10] to-[#04120c] opacity-90" />
+                <div className="grain-overlay opacity-30" />
+
+                {/* Simulated Presentation Canvas */}
+                <div className="relative z-10 w-full h-full p-8 flex flex-col justify-between">
+                  <div className="flex items-center justify-between">
+                    <div className="px-3 py-1 rounded-md bg-black/60 backdrop-blur-md border border-white/15 text-xs font-mono text-white/90">
+                      Слайд 02 / 08 · {currentTrack.name.split(':')[0]}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-mono text-[11px] border border-emerald-500/30">
+                        Zero-Cost Slide Capture
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Visual Diagram Representation */}
+                  <div className="flex flex-col items-center justify-center text-center my-auto">
+                    <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/15 flex items-center justify-center text-white mb-3 shadow-inner">
+                      <Radio className="w-8 h-8 text-sky-400 animate-pulse" />
+                    </div>
+                    <h3 className="text-xl sm:text-2xl font-bold font-head text-white tracking-tight max-w-md">
+                      {currentTrack.lesson.title}
+                    </h3>
+                    <p className="text-xs sm:text-sm text-[#9a9a9a] mt-1 max-w-sm">
+                      Синхронный видеопоток лектора и распознанных материалов доски в 1080p
+                    </p>
+                  </div>
+
+                  {/* Empty spacer */}
+                  <div className="h-6" />
+                </div>
+              </div>
+
+              {/* PiP Overlay: Teacher Video Avatar in Corner */}
+              {videoViewMode === 'pip' && (
+                <div className="absolute top-4 right-4 z-20 w-36 sm:w-44 aspect-video rounded-xl bg-black/85 border border-white/20 shadow-xl overflow-hidden p-2 flex flex-col justify-between backdrop-blur-md">
+                  <div className="flex items-center justify-between text-[10px] text-white/70">
+                    <span className="flex items-center gap-1 font-bold text-emerald-400">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      КАМЕРА
+                    </span>
+                    <span className="font-mono text-white/40">HD</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-full bg-white/15 text-[11px] font-bold text-white flex items-center justify-center font-mono">
+                      ПР
+                    </div>
+                    <div className="text-[11px] text-white font-semibold leading-tight truncate">
+                      Лектор в эфире
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div className="h-1.5 w-1 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <div className="h-2.5 w-1 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <div className="h-2 w-1 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                    <span className="text-[9px] text-[#9a9a9a] ml-1 font-mono">ASR транскрибирует</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Top Controls Overlay */}
+              <div className="relative z-10 p-4 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-b from-black/80 to-transparent">
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-1 rounded bg-black/60 border border-white/20 text-xs font-mono text-white">
+                    FILL AI Cinema Engine
+                  </span>
+                </div>
+                <button
+                  onClick={() => setVideoViewMode((m) => (m === 'pip' ? 'slide' : 'pip'))}
+                  className="px-2.5 py-1 rounded bg-black/60 border border-white/20 text-xs text-white hover:bg-white/10 transition-colors"
+                >
+                  {videoViewMode === 'pip' ? 'Скрыть окно лектора' : 'Показать окно лектора'}
+                </button>
+              </div>
+
+              {/* Bottom Player Controller Bar (YouTube Style) */}
+              <div className="relative z-10 p-3 sm:p-4 bg-gradient-to-t from-black/95 via-black/80 to-transparent flex flex-col gap-2">
+                {/* Progress bar line */}
+                <div className="w-full h-1 bg-white/20 rounded-full overflow-hidden cursor-pointer relative">
+                  <div className="w-3/4 h-full bg-red-600 rounded-full" />
+                </div>
+
+                <div className="flex items-center justify-between text-xs text-white">
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => setIsVideoPlaying((p) => !p)}
+                      className="p-1 rounded hover:text-red-500 transition-colors"
+                      title={isVideoPlaying ? 'Пауза' : 'Воспроизведение'}
+                    >
+                      {isVideoPlaying ? <Pause className="w-4 h-4 fill-white" /> : <Play className="w-4 h-4 fill-white" />}
+                    </button>
+
+                    <button
+                      onClick={() => setIsMuted((m) => !m)}
+                      className="p-1 rounded hover:text-[#9a9a9a] transition-colors"
+                      title={isMuted ? 'Включить звук' : 'Выключить звук'}
+                    >
+                      {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                    </button>
+
+                    <span className="font-mono text-[11px] text-white/70">
+                      42:15 / 60:00
+                    </span>
+
+                    <span className="hidden sm:flex items-center gap-1.5 text-[11px] text-red-500 font-bold ml-2">
+                      <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                      ПРЯМОЙ ЭФИР
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <span className="px-1.5 py-0.5 rounded bg-white/10 text-[10px] font-mono text-white/80">
+                      1080p 60fps
+                    </span>
+                    <button className="p-1 rounded hover:text-[#9a9a9a] transition-colors">
+                      <Maximize2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Video Meta & Verified Badge Strip */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-[#090b0e] border border-white/10">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-white/20 to-white/5 border border-white/15 flex items-center justify-center font-bold text-xs text-white font-mono flex-none">
+                  {(currentTrack.lesson.subject || 'F').charAt(0)}
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-white flex items-center gap-2">
+                    <span>{currentTrack.lesson.subject || 'Дисциплина'}</span>
+                    <span className="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.2 rounded flex items-center gap-1">
+                      <ShieldCheck className="w-3 h-3" />
+                      Верифицировано преподавателем
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-[#9a9a9a]">
+                    Оркестрация конспекта: Gemini 3.5 Flash-Lite + Soniox ASR
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 text-xs font-mono text-white/60">
+                <span>Блоков в конспекте:</span>
+                <span className="text-white font-bold">{visibleBlocks.length}</span>
+              </div>
+            </div>
+
+          </div>
+
+          {/* ========================================================== */}
+          {/* RIGHT: LIVE QUIZ & FAST QUESTION SIDEBAR (Col 9..12)       */}
+          {/* ========================================================== */}
+          <div className="lg:col-span-4 flex flex-col gap-4 sticky top-[130px]">
+            
+            {/* Tab Switcher: Live Quiz vs Quick Questions */}
+            <div className="grid grid-cols-2 p-1 bg-[#0b0d10] rounded-xl border border-white/10 gap-1">
+              <button
+                onClick={() => setActiveSideTab('quiz')}
+                className={`py-2 px-3 rounded-lg text-xs font-semibold font-head flex items-center justify-center gap-1.5 transition-all ${
+                  activeSideTab === 'quiz'
+                    ? 'bg-white/15 text-white border border-white/20 shadow-sm'
+                    : 'text-[#9a9a9a] hover:text-white'
+                }`}
+              >
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span>Квиз лектора</span>
+              </button>
+
+              <button
+                onClick={() => setActiveSideTab('ask')}
+                className={`py-2 px-3 rounded-lg text-xs font-semibold font-head flex items-center justify-center gap-1.5 transition-all ${
+                  activeSideTab === 'ask'
+                    ? 'bg-white/15 text-white border border-white/20 shadow-sm'
+                    : 'text-[#9a9a9a] hover:text-white'
+                }`}
+              >
+                <MessageSquare className="w-3.5 h-3.5" />
+                <span>Быстрый вопрос</span>
+              </button>
+            </div>
+
+            {/* TAB CONTENT 1: LIVE QUIZ */}
+            {activeSideTab === 'quiz' && (
+              <div className="rounded-2xl bg-[#090b0e] border border-white/15 p-5 shadow-xl flex flex-col gap-4">
+                
+                {/* Header with countdown */}
+                <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    {currentTrack.live_question.eyebrow}
+                  </span>
+                  <span className="text-xs font-bold font-mono text-white flex items-center gap-1 bg-white/5 px-2 py-0.5 rounded border border-white/10">
+                    <Clock className="w-3.5 h-3.5 text-[#9a9a9a]" />
+                    00:{countdown < 10 ? `0${countdown}` : countdown}
+                  </span>
+                </div>
+
+                {/* Question Text */}
+                <h3 className="text-sm font-bold font-head text-white leading-snug">
+                  {currentTrack.live_question.text}
+                </h3>
+
+                {/* Options List */}
+                <div className="space-y-2">
+                  {currentTrack.live_question.options.map((opt) => {
+                    const isChosen = selectedOptionId === opt.id;
+                    return (
+                      <button
+                        key={opt.id}
+                        onClick={() => handleSelectOption(opt.id)}
+                        disabled={isAnswered}
+                        className={`w-full text-left p-3 rounded-xl border text-xs font-medium transition-all flex items-start gap-2.5 ${
+                          isChosen
+                            ? opt.is_correct
+                              ? 'border-emerald-500 bg-emerald-950/40 text-white shadow-[0_0_15px_rgba(52,211,153,0.2)]'
+                              : 'border-red-500 bg-red-950/40 text-white'
+                            : isAnswered && opt.is_correct
+                            ? 'border-emerald-500/50 bg-emerald-950/20 text-white'
+                            : 'border-white/10 bg-[#121417] hover:border-white/30 text-white/90'
+                        }`}
+                      >
+                        <span
+                          className={`w-5 h-5 rounded-full flex-none flex items-center justify-center text-[10px] font-bold border ${
+                            isChosen
+                              ? opt.is_correct
+                                ? 'border-emerald-400 bg-emerald-400 text-black'
+                                : 'border-red-400 bg-red-400 text-white'
+                              : 'border-white/20 text-white/60'
+                          }`}
+                        >
+                          {opt.id}
+                        </span>
+                        <span className="flex-1 leading-tight">{opt.text}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Instant Explanatory Feedback (0ms distractor explanation) */}
+                {isAnswered && currentOption && (
+                  <div
+                    className={`p-3.5 rounded-xl border text-xs leading-relaxed animate-fadeIn ${
+                      currentOption.is_correct
+                        ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-200'
+                        : 'bg-amber-950/40 border-amber-500/40 text-amber-200'
+                    }`}
+                  >
+                    <div className="font-bold mb-1 flex items-center gap-1.5">
+                      {currentOption.is_correct ? (
+                        <>
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                          <span>Правильный ответ!</span>
+                        </>
+                      ) : (
+                        <>
+                          <AlertCircle className="w-3.5 h-3.5 text-amber-400" />
+                          <span>Пояснение к ошибке (0ms latency):</span>
+                        </>
+                      )}
+                    </div>
+                    <span>{currentOption.explanation}</span>
+                  </div>
+                )}
+
+                {/* Reset test button for Stand showcase */}
+                {isAnswered && (
+                  <button
+                    onClick={() => {
+                      setSelectedOptionId(null);
+                      setIsAnswered(false);
+                      setCountdown(24);
+                    }}
+                    className="text-xs text-[#9a9a9a] hover:text-white flex items-center justify-center gap-1.5 py-1 text-center"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    <span>Пройти заново для демонстрации</span>
+                  </button>
+                )}
+
+              </div>
+            )}
+
+            {/* TAB CONTENT 2: QUICK QUESTION TO TEACHER */}
+            {activeSideTab === 'ask' && (
+              <div className="rounded-2xl bg-[#090b0e] border border-white/15 p-5 shadow-xl flex flex-col gap-4">
+                <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-sky-400 flex items-center gap-1.5">
+                    <MessageSquare className="w-3.5 h-3.5" />
+                    Вопрос в эфир
+                  </span>
+                  <span className="text-[10px] font-mono text-white/50">
+                    Live Chat
+                  </span>
+                </div>
+
+                {/* List of submitted questions */}
+                <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                  {submittedQuestions.map((q, idx) => (
+                    <div key={idx} className="p-2.5 rounded-lg bg-[#121417] border border-white/10 text-xs">
+                      <div className="flex items-center justify-between text-[10px] text-white/50 mb-1">
+                        <span>Вы (Ученик)</span>
+                        <span className="text-emerald-400">В очереди лектора</span>
+                      </div>
+                      <div className="text-white/90">{q}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Question Input Form */}
+                <form onSubmit={handleSendQuestion} className="flex flex-col gap-2 pt-2 border-t border-white/10">
+                  <textarea
+                    rows={2}
+                    value={studentQuestionInput}
+                    onChange={(e) => setStudentQuestionInput(e.target.value)}
+                    placeholder="Напишите быстрый вопрос лектору..."
+                    className="w-full bg-[#13161a] border border-white/15 rounded-lg p-2.5 text-xs text-white placeholder-white/30 focus:outline-none focus:border-white/50 focus:ring-1 focus:ring-white/20 resize-none"
+                  />
+                  <button
+                    type="submit"
+                    disabled={!studentQuestionInput.trim()}
+                    className="btn-liquid-solid text-xs h-8 px-3 flex items-center justify-center gap-1.5 disabled:opacity-40"
+                  >
+                    <span>Отправить в эфир</span>
+                    <Send className="w-3 h-3 text-black" />
+                  </button>
+                </form>
+              </div>
+            )}
+
+            {/* Attendance & Catchup Banner */}
+            <div className="p-4 rounded-xl bg-gradient-to-br from-[#0c121c] to-[#080a0e] border border-white/10 flex items-center justify-between gap-3">
+              <div className="text-xs">
+                <span className="font-bold text-white block">Смысловое присутствие</span>
+                <span className="text-[11px] text-[#9a9a9a]">Синхронизировано с таймкодом</span>
+              </div>
+              <button
+                onClick={() => setShowCatchupModal(true)}
+                className="btn-liquid-ghost text-xs h-7 px-2.5"
+              >
+                Выжимка
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* ========================================================================= */}
+        {/* 3. EDITORIAL NOTE BLOCKS UNDERNEATH VIDEO ("поля конспекта снизу")         */}
+        {/* ========================================================================= */}
+        <section className="mt-12 pt-8 border-t border-white/10">
+          
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="liquid-badge text-[11px] py-0.5 px-2">
+                  <FileText className="w-3.5 h-3.5 text-white" />
+                  Мультимедийный конспект
+                </span>
+                <span className="text-xs text-emerald-400 font-mono">Real-time sync</span>
+              </div>
+              <h2 className="text-xl sm:text-2xl font-bold font-head text-white">
+                Конспект лекции в реальном времени
+              </h2>
+            </div>
+            <p className="text-xs sm:text-sm text-[#9a9a9a] max-w-md">
+              Слайды, формулы LaTeX, аудиоцитаты и структурированный текст появляются автоматически по ходу объяснения учителя.
+            </p>
+          </div>
+
+          {/* Note Blocks Stream */}
           <div className="space-y-8">
             {visibleBlocks.map((block, idx) => {
               const hasMedia = Boolean(block.media_artifact);
@@ -258,105 +540,108 @@ export const StudentScreen: React.FC = () => {
               return (
                 <article
                   key={block.id}
-                  className="border-t border-fill-border/70 pt-6 first:border-t-0 first:pt-0"
+                  className="rounded-2xl bg-[#090a0d] border border-white/10 p-6 sm:p-8 hover:border-white/25 transition-all shadow-lg"
                 >
-                  {/* Section Title & Timecode */}
-                  <div className="flex items-baseline justify-between gap-4 mb-3">
-                    <h2 className="text-base sm:text-lg font-bold font-head text-fill-text">
-                      {idx + 1}. {block.title}
-                    </h2>
-                    <span className="text-[11px] font-mono text-fill-text-faint flex-none">
-                      Таймкод {Math.floor(block.t_start_ms / 60000)}:00
-                    </span>
+                  {/* Top Bar of the Block */}
+                  <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-6">
+                    <div className="flex items-center gap-3">
+                      <span className="w-7 h-7 rounded-lg bg-white/10 border border-white/15 flex items-center justify-center font-head font-bold text-xs text-white">
+                        {idx + 1}
+                      </span>
+                      <h3 className="text-base sm:text-lg font-bold font-head text-white">
+                        {block.title}
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs font-mono text-[#9a9a9a]">
+                      <Clock className="w-3.5 h-3.5" />
+                      <span>{Math.floor(block.t_start_ms / 60000)}:00</span>
+                    </div>
                   </div>
 
-                  {/* Two-Column Editorial Layout (Media + Narrative) */}
-                  <div
-                    className={`grid grid-cols-1 ${
-                      hasMedia ? 'lg:grid-cols-12' : ''
-                    } gap-6 items-start`}
-                  >
-                    {/* MEDIA ARTIFACT IN ACCENT FRAME */}
+                  {/* 2-Column Responsive Layout (Media Frame + Narrative Text) */}
+                  <div className={`grid grid-cols-1 ${hasMedia ? 'lg:grid-cols-12' : ''} gap-6 items-start`}>
+                    
+                    {/* MEDIA ARTIFACT IN LIQUID ACCENT FRAME */}
                     {hasMedia && block.media_artifact && (
                       <div
                         className={`lg:col-span-5 ${
                           isMediaLeft ? 'lg:order-1' : 'lg:order-2'
-                        } border border-fill-border rounded-lg overflow-hidden bg-fill-surface-alt shadow-sm`}
+                        } border border-white/15 rounded-xl overflow-hidden bg-[#0e1014] shadow-md`}
                       >
-                        {/* Frame Header / Badge */}
-                        <div className="px-3 py-2 border-b border-fill-border flex items-center justify-between bg-fill-surface text-[11px] font-bold text-fill-text-muted">
-                          <span className="flex items-center gap-1.5">
-                            {block.media_artifact.type === 'audio' && <Volume2 className="w-3.5 h-3.5 text-fill-blue" />}
-                            {block.media_artifact.type === 'code' && <Code className="w-3.5 h-3.5 text-fill-green-deep" />}
-                            {block.media_artifact.type === 'slide' && <FileText className="w-3.5 h-3.5 text-fill-text-faint" />}
-                            {block.media_artifact.type === 'photo' && <ImageIcon className="w-3.5 h-3.5 text-fill-text-faint" />}
-                            {block.media_artifact.title || 'Иллюстрация к тезису'}
+                        {/* Frame Header */}
+                        <div className="px-3.5 py-2.5 border-b border-white/10 flex items-center justify-between bg-[#13161c] text-xs font-bold text-white">
+                          <span className="flex items-center gap-2">
+                            {block.media_artifact.type === 'audio' && <Volume2 className="w-4 h-4 text-sky-400" />}
+                            {block.media_artifact.type === 'code' && <Code className="w-4 h-4 text-emerald-400" />}
+                            {block.media_artifact.type === 'slide' && <FileText className="w-4 h-4 text-amber-400" />}
+                            {block.media_artifact.type === 'photo' && <ImageIcon className="w-4 h-4 text-purple-400" />}
+                            <span>{block.media_artifact.title || 'Иллюстрация к тезису'}</span>
                           </span>
                           {block.media_artifact.badge && (
-                            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-fill-surface-alt border border-fill-border text-fill-text-faint">
+                            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/10 border border-white/15 text-white/70">
                               {block.media_artifact.badge}
                             </span>
                           )}
                         </div>
 
                         {/* Frame Content */}
-                        <div className="p-3 bg-fill-surface flex flex-col gap-2">
+                        <div className="p-4 flex flex-col gap-3">
                           {/* Code Preview */}
                           {block.media_artifact.type === 'code' && block.media_artifact.code_snippet && (
-                            <pre className="font-mono text-[11.5px] p-3 rounded bg-[#14171A] text-slate-100 overflow-x-auto leading-relaxed">
+                            <pre className="font-mono text-xs p-3.5 rounded-lg bg-[#050608] text-emerald-300 border border-white/10 overflow-x-auto leading-relaxed">
                               <code>{block.media_artifact.code_snippet}</code>
                             </pre>
                           )}
 
                           {/* Audio Player Mock */}
                           {block.media_artifact.type === 'audio' && (
-                            <div className="p-3 rounded-md bg-fill-surface-alt border border-fill-border flex items-center justify-between">
-                              <div className="flex items-center gap-2.5">
+                            <div className="p-3 rounded-lg bg-[#14181f] border border-white/10 flex items-center justify-between">
+                              <div className="flex items-center gap-3">
                                 <button
                                   onClick={() =>
                                     setIsPlayingAudio((prev) =>
                                       prev === block.id ? null : block.id
                                     )
                                   }
-                                  className="w-7 h-7 rounded-full bg-fill-text text-fill-surface flex items-center justify-center text-xs"
+                                  className="w-8 h-8 rounded-full bg-white text-black flex items-center justify-center hover:scale-105 transition-transform"
                                 >
                                   {isPlayingAudio === block.id ? (
-                                    <Pause className="w-3 h-3 text-fill-surface" />
+                                    <Pause className="w-3.5 h-3.5 fill-black" />
                                   ) : (
-                                    <Play className="w-3 h-3 text-fill-surface ml-0.5" />
+                                    <Play className="w-3.5 h-3.5 fill-black ml-0.5" />
                                   )}
                                 </button>
-                                <div className="text-xs">
-                                  <div className="font-semibold text-fill-text">
-                                    Аудиозапись лектора
+                                <div>
+                                  <div className="text-xs font-semibold text-white">
+                                    Аудиоцитата учителя
                                   </div>
-                                  <div className="text-[10px] text-fill-text-faint">
-                                    Длительность: {block.media_artifact.audio_duration}
+                                  <div className="text-[10px] text-[#9a9a9a]">
+                                    {block.media_artifact.audio_duration}
                                   </div>
                                 </div>
                               </div>
-                              <span className="text-[11px] font-mono text-fill-green-deep font-bold">
+                              <span className="text-[11px] font-mono text-emerald-400 font-bold">
                                 {isPlayingAudio === block.id ? 'Воспроизведение...' : 'Слушать'}
                               </span>
                             </div>
                           )}
 
-                          {/* SVG / Diagram Placeholder */}
+                          {/* Slide / Diagram Frame */}
                           {(block.media_artifact.type === 'slide' ||
                             block.media_artifact.type === 'diagram' ||
                             block.media_artifact.type === 'photo') && (
-                            <div className="w-full h-36 rounded bg-fill-surface-alt border border-dashed border-fill-border flex flex-col items-center justify-center text-center p-3">
-                              <span className="text-xs font-bold text-fill-text">
+                            <div className="w-full h-40 rounded-lg bg-[#07080a] border border-dashed border-white/15 flex flex-col items-center justify-center text-center p-4">
+                              <span className="text-xs font-bold text-white mb-1">
                                 {block.media_artifact.title}
                               </span>
-                              <span className="text-[11px] text-fill-text-faint mt-1 max-w-[240px]">
+                              <span className="text-[11px] text-[#9a9a9a] max-w-xs">
                                 Векторный слайд из предзагруженной презентации (Zero-Cost pHash)
                               </span>
                             </div>
                           )}
 
                           {/* Caption */}
-                          <p className="text-[11px] text-fill-text-faint italic leading-snug border-t border-fill-border pt-2">
+                          <p className="text-[11px] text-[#9a9a9a] italic leading-snug border-t border-white/10 pt-2">
                             {block.media_artifact.caption}
                           </p>
                         </div>
@@ -369,138 +654,75 @@ export const StudentScreen: React.FC = () => {
                         hasMedia ? 'lg:col-span-7' : 'w-full'
                       } ${isMediaLeft ? 'lg:order-2' : 'lg:order-1'}`}
                     >
-                      <p className="text-sm sm:text-[15px] leading-relaxed text-fill-text font-normal">
+                      <p className="text-sm sm:text-base leading-relaxed text-white/90 font-normal">
                         {block.body_md}
                       </p>
                     </div>
+
                   </div>
                 </article>
               );
             })}
           </div>
-        </div>
-      ) : (
-        /* ========================================================= */
-        /* MOBILE VIEW (SMARTPHONE NOTCH FRAME)                      */
-        /* ========================================================= */
-        <div className="w-[340px] sm:w-[360px] h-[680px] sm:h-[720px] rounded-[36px] border-[8px] border-fill-text bg-fill-surface overflow-hidden relative shadow-md flex flex-col">
-          {/* Notch */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120px] h-[20px] bg-fill-text rounded-b-xl z-20" />
 
-          {/* Top bar inside phone */}
-          <div className="pt-6 pb-2.5 px-4 border-b border-fill-border flex items-center justify-between bg-fill-surface z-10">
-            <strong className="text-xs font-bold font-head text-fill-text truncate max-w-[180px]">
-              {currentTrack.lesson.title}
-            </strong>
-            <span className="text-[10px] bg-fill-success-soft text-fill-success font-bold px-1.5 py-0.5 rounded">
-              Одобрено
-            </span>
-          </div>
+        </section>
 
-          {/* Phone Content Area */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-fill-surface">
-            {/* Live Question Card inside Mobile */}
-            {studentState === 'question' && (
-              <div className="bg-fill-surface-alt border border-fill-green-deep/30 rounded-lg p-3.5 shadow-sm">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-fill-green-deep mb-1">
-                  {currentTrack.live_question.eyebrow}
-                </div>
-                <h4 className="text-xs font-bold text-fill-text mb-3 leading-snug">
-                  {currentTrack.live_question.text}
-                </h4>
+      </div>
 
-                <div className="space-y-1.5">
-                  {currentTrack.live_question.options.map((opt) => (
-                    <button
-                      key={opt.id}
-                      onClick={() => handleSelectOption(opt.id)}
-                      disabled={isAnswered}
-                      className={`w-full text-left p-2.5 rounded border text-xs transition-all flex items-center gap-2 ${
-                        selectedOptionId === opt.id
-                          ? opt.is_correct
-                            ? 'border-fill-success bg-fill-success-soft font-semibold'
-                            : 'border-fill-warning bg-fill-warning-soft'
-                          : 'border-fill-border bg-fill-surface'
-                      }`}
-                    >
-                      <span className="font-bold">{opt.id}.</span>
-                      <span className="truncate">{opt.text}</span>
-                    </button>
-                  ))}
-                </div>
-
-                {isAnswered && currentOption && (
-                  <div className="mt-2.5 p-2 rounded bg-fill-surface text-[11px] border border-fill-border text-fill-text-muted leading-tight">
-                    <b>{currentOption.is_correct ? 'Верно: ' : 'Пояснение: '}</b>
-                    {currentOption.explanation}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Note Blocks inside Mobile */}
-            {visibleBlocks.map((block) => (
-              <div key={block.id} className="border border-fill-border rounded-lg p-3 bg-fill-surface-alt">
-                <h5 className="text-xs font-bold text-fill-text mb-1.5">
-                  {block.title}
-                </h5>
-                <p className="text-[11.5px] text-fill-text-muted leading-relaxed">
-                  {block.body_md}
-                </p>
-                {block.media_artifact && (
-                  <div className="mt-2.5 p-2 rounded bg-fill-surface border border-fill-border text-[10.5px] text-fill-text-faint">
-                    <b>{block.media_artifact.badge}: </b>
-                    {block.media_artifact.caption}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* CATCH-UP MODAL ("ЧТО Я ПРОПУСТИЛ?") */}
+      {/* ========================================================================= */}
+      {/* 4. SMART CATCHUP MODAL ("Что я пропустил?")                               */}
+      {/* ========================================================================= */}
       {showCatchupModal && (
-        <div className="fixed inset-0 bg-[#14171A]/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-fill-surface max-w-md w-full rounded-xl border border-fill-border p-6 shadow-xl relative">
-            <button
-              onClick={() => setShowCatchupModal(false)}
-              className="absolute top-4 right-4 text-fill-text-muted hover:text-fill-text"
-            >
-              <X className="w-4 h-4" />
-            </button>
-
-            <span className="text-[11px] font-bold uppercase tracking-wider text-fill-green-deep">
-              Экспресс-выжимка (0 токенов)
-            </span>
-            <h3 className="text-base font-bold text-fill-text mt-1 mb-3">
-              Что вы пропустили за первые 20 минут:
-            </h3>
-
-            <div className="space-y-2.5 text-xs text-fill-text-muted leading-relaxed">
-              <div className="p-2.5 rounded bg-fill-surface-alt border border-fill-border">
-                <b className="text-fill-text block mb-0.5">1. Базовые принципы</b>
-                Преподаватель объяснил вводные понятия и ограничения рассматриваемой модели.
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
+          <div className="w-full max-w-lg bg-[#090b0e] border border-white/15 rounded-2xl p-6 shadow-2xl flex flex-col gap-4 text-white">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div className="flex items-center gap-2">
+                <HelpCircle className="w-5 h-5 text-sky-400" />
+                <h3 className="text-base font-bold font-head">
+                  Смысловая выжимка пропущенного
+                </h3>
               </div>
-              <div className="p-2.5 rounded bg-fill-surface-alt border border-fill-border">
-                <b className="text-fill-text block mb-0.5">2. Ключевая формула и механика</b>
-                Разобран механизм взаимодействия компонентов и влияние погрешностей на результат.
+              <button
+                onClick={() => setShowCatchupModal(false)}
+                className="p-1 rounded-lg text-white/60 hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-xs text-[#9a9a9a] leading-relaxed">
+              FILL AI зафиксировал таймкоды вашего присутствия и сгенерировал персонализированный дайджест:
+            </p>
+
+            <div className="space-y-3">
+              <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 text-xs">
+                <strong className="text-white block font-semibold mb-1">
+                  1. Определение гидрофобного ядра:
+                </strong>
+                <span className="text-[#9a9a9a]">
+                  Фосфолипидный бислой формирует полупроницаемый барьер толщиной 7-10 нм.
+                </span>
               </div>
-              <div className="p-2.5 rounded bg-fill-surface-alt border border-fill-border">
-                <b className="text-fill-text block mb-0.5">3. Типичные ошибки</b>
-                Сделан акцент на распространенных заблуждениях, снижающих качество решения.
+              <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 text-xs">
+                <strong className="text-white block font-semibold mb-1">
+                  2. Первично-активный транспорт:
+                </strong>
+                <span className="text-[#9a9a9a]">
+                  3 иона Na+ выкачиваются наружу, 2 иона K+ закачиваются внутрь за 1 молекулу АТФ.
+                </span>
               </div>
             </div>
 
             <button
               onClick={() => setShowCatchupModal(false)}
-              className="btn btn-primary w-full text-xs py-2 mt-5"
+              className="btn-liquid-solid text-xs h-9 w-full mt-2"
             >
-              Понятно, вернуться к текущему моменту
+              Вернуться к эфиру
             </button>
           </div>
         </div>
       )}
+
     </div>
   );
 };

@@ -4,48 +4,72 @@ import { LandingScreen } from './components/LandingScreen';
 import { TeacherLiveScreen } from './components/TeacherLiveScreen';
 import { StudentScreen } from './components/StudentScreen';
 import { LessonsManager } from './components/LessonsManager';
+import { AuthModal } from './components/AuthModal';
 import { api } from './services/api';
+import { User, UserRole } from './types/auth';
 
 export const App: React.FC = () => {
   const [currentScreen, setCurrentScreen] = useState<ScreenId>('landing');
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const [isBackendConnected, setIsBackendConnected] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authInitialRole, setAuthInitialRole] = useState<UserRole>('teacher');
+  const [currentUser, setCurrentUser] = useState<User | null>({
+    id: 'teacher-bio',
+    name: 'Д-р Аскар Ибраев',
+    role: 'teacher',
+    org_id: 'org-kaznu',
+    email: 'askar.ibrayev@kaznu.kz'
+  });
 
   useEffect(() => {
-    // Check dark mode preference
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    if (prefersDark) {
-      setIsDarkMode(true);
-      document.documentElement.setAttribute('data-theme', 'dark');
-    }
-
-    // Healthcheck backend
+    // Healthcheck FastAPI backend at port 8000
     api.checkHealth()
       .then(() => setIsBackendConnected(true))
       .catch(() => setIsBackendConnected(false));
+
+    // Periodic check every 15 seconds
+    const interval = setInterval(() => {
+      api.checkHealth()
+        .then(() => setIsBackendConnected(true))
+        .catch(() => setIsBackendConnected(false));
+    }, 15000);
+
+    return () => clearInterval(interval);
   }, []);
 
-  const handleToggleTheme = () => {
-    setIsDarkMode((prev) => {
-      const next = !prev;
-      document.documentElement.setAttribute('data-theme', next ? 'dark' : 'light');
-      return next;
-    });
+  const handleOpenAuth = (role: UserRole = 'teacher') => {
+    setAuthInitialRole(role);
+    setIsAuthModalOpen(true);
+  };
+
+  const handleSelectUser = (user: User, targetScreen?: 'live' | 'student') => {
+    setCurrentUser(user);
+    if (targetScreen) {
+      setCurrentScreen(targetScreen);
+    }
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
   };
 
   return (
-    <div className="min-h-screen bg-fill-bg text-fill-text flex flex-col selection:bg-fill-green selection:text-[#14171A]">
+    <div className="min-h-screen bg-[#000000] text-white flex flex-col selection:bg-emerald-400 selection:text-black font-body">
       <Header
         currentScreen={currentScreen}
         onScreenChange={setCurrentScreen}
         isBackendConnected={isBackendConnected}
-        isDarkMode={isDarkMode}
-        onToggleTheme={handleToggleTheme}
+        currentUser={currentUser}
+        onOpenAuth={(role) => handleOpenAuth(role || 'teacher')}
+        onLogout={handleLogout}
       />
 
-      <main className="flex-1">
+      <main className="flex-1 bg-[#000000]">
         {currentScreen === 'landing' && (
-          <LandingScreen onNavigate={setCurrentScreen} />
+          <LandingScreen 
+            onNavigate={setCurrentScreen} 
+            onOpenAuth={(role) => handleOpenAuth(role || 'teacher')}
+          />
         )}
 
         {currentScreen === 'live' && (
@@ -60,6 +84,14 @@ export const App: React.FC = () => {
           <LessonsManager onBackendStatusChange={setIsBackendConnected} />
         )}
       </main>
+
+      {/* Modern Liquid-Metal Auth & Role Selection Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onSelectUser={handleSelectUser}
+        initialRole={authInitialRole}
+      />
     </div>
   );
 };

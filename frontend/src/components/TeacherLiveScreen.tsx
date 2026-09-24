@@ -25,7 +25,8 @@ import {
   BarChart3,
   Copy,
   Send,
-  Sparkles
+  Sparkles,
+  Upload
 } from 'lucide-react';
 import { 
   ALL_TRACKS,
@@ -59,6 +60,20 @@ export const TeacherLiveScreen: React.FC<TeacherLiveScreenProps> = () => {
   const [showAttendanceModal, setShowAttendanceModal] = useState(false);
   const [sentCatchupIds, setSentCatchupIds] = useState<string[]>(['att-2']);
   const [isCopiedWhatsApp, setIsCopiedWhatsApp] = useState(false);
+
+  // PDF Presentation Ingestion state
+  const [uploadedPdfName, setUploadedPdfName] = useState<string>('Biomembranes_Lecture_02.pdf');
+  const [isUploadingPdf, setIsUploadingPdf] = useState(false);
+  const [pdfUploadSuccess, setPdfUploadSuccess] = useState(true);
+
+  const handleSimulatePdfUpload = (filename: string) => {
+    setIsUploadingPdf(true);
+    setTimeout(() => {
+      setUploadedPdfName(filename);
+      setIsUploadingPdf(false);
+      setPdfUploadSuccess(true);
+    }, 1200);
+  };
 
   // Stand Interactive Demo & Speech Recognition (Fair Showcase)
   const [isLiveDemoRunning, setIsLiveDemoRunning] = useState(false);
@@ -339,13 +354,22 @@ export const TeacherLiveScreen: React.FC<TeacherLiveScreenProps> = () => {
           </button>
 
           <button
-            onClick={() => setActiveTab((prev) => (prev === 'notes' ? 'slides' : 'notes'))}
+            onClick={() => setShowAttendanceModal(true)}
+            className="btn btn-ghost text-xs py-1.5 px-3 flex items-center gap-1.5 border border-emerald-500/30 text-emerald-400 bg-emerald-950/20 hover:bg-emerald-900/30 transition-all"
+            title="Смысловой трекинг присутствия, фокуса и выжимка пропусков"
+          >
+            <Users className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Трекинг (28/30)</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('slides')}
             className={`btn btn-ghost text-xs py-1.5 px-3 flex items-center gap-1.5 ${
-              activeTab === 'slides' ? 'bg-fill-surface-alt font-bold' : ''
+              activeTab === 'slides' ? 'bg-fill-surface-alt font-bold border border-white/20' : ''
             }`}
           >
-            <Presentation className="w-3.5 h-3.5 text-fill-blue" />
-            Слайды ({DEMO_SLIDES.length})
+            <Upload className="w-3.5 h-3.5 text-sky-400" />
+            <span>Загрузка PDF / Слайды</span>
           </button>
 
           <button
@@ -446,22 +470,81 @@ export const TeacherLiveScreen: React.FC<TeacherLiveScreenProps> = () => {
       {activeTab === 'slides' ? (
         /* Slide Deck View */
         <div className="px-4 sm:px-8 py-5 flex-1">
-          <div className="flex items-center justify-between mb-4">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
             <div>
-              <h2 className="text-[16px] font-bold text-fill-text flex items-center gap-2">
-                <Presentation className="w-4 h-4 text-fill-blue" />
-                Слайды презентации (Materials Ingestion)
+              <h2 className="text-[17px] font-bold text-fill-text flex items-center gap-2">
+                <Upload className="w-5 h-5 text-sky-400" />
+                <span>Загрузка и парсинг материалов (PDF Presentation Ingestion)</span>
               </h2>
-              <p className="text-xs text-fill-text-muted">
-                Автоматически обработаны из PDF через PyMuPDF с извлечением ключевых понятий и генерацией pHash.
+              <p className="text-xs text-fill-text-muted mt-0.5">
+                Загрузите слайды лекции в PDF. FILL AI автоматически извлечёт текст (PyMuPDF), сгенерирует perceptual hash (pHash) и сопоставит кадры видео с вектором слайдов.
               </p>
             </div>
             <button
               onClick={() => setActiveTab('notes')}
-              className="btn btn-ghost text-xs py-1 px-3"
+              className="btn btn-ghost text-xs py-1.5 px-3 self-start sm:self-auto"
             >
               Вернуться к конспекту
             </button>
+          </div>
+
+          {/* Interactive PDF Upload Dropzone */}
+          <div className="mb-8 p-6 rounded-2xl bg-[#090b0e] border-2 border-dashed border-white/20 hover:border-white/40 transition-colors flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/15 flex items-center justify-center text-sky-400 flex-none">
+                {isUploadingPdf ? (
+                  <Sparkles className="w-7 h-7 animate-spin text-emerald-400" />
+                ) : (
+                  <Upload className="w-7 h-7" />
+                )}
+              </div>
+              <div>
+                <div className="text-sm font-bold text-white flex items-center gap-2">
+                  <span>{uploadedPdfName}</span>
+                  {pdfUploadSuccess && !isUploadingPdf && (
+                    <span className="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded font-mono">
+                      8 слайдов обработано (PyMuPDF)
+                    </span>
+                  )}
+                </div>
+                <div className="text-xs text-[#9a9a9a] mt-1">
+                  {isUploadingPdf ? (
+                    <span className="text-sky-400 animate-pulse">
+                      Идёт растеризация PDF, вычисление pHash и извлечение ключевых терминов...
+                    </span>
+                  ) : (
+                    <span>Перетащите файл .pdf сюда или выберите готовый сценарий для демонстрации</span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Demo Preload Buttons */}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[11px] font-mono text-white/40 uppercase">Демо PDF:</span>
+              <button
+                disabled={isUploadingPdf}
+                onClick={() => handleSimulatePdfUpload('Biomembranes_BioPhysics_Lec02.pdf')}
+                className="btn-liquid-ghost text-xs h-8 px-3"
+              >
+                Биомембраны.pdf
+              </button>
+              <button
+                disabled={isUploadingPdf}
+                onClick={() => handleSimulatePdfUpload('Async_Python_FastAPI_Architecture.pdf')}
+                className="btn-liquid-ghost text-xs h-8 px-3"
+              >
+                Python_Async.pdf
+              </button>
+              <button
+                disabled={isUploadingPdf}
+                onClick={() => handleSimulatePdfUpload('IELTS_Academic_Task2_Cohesion.pdf')}
+                className="btn-liquid-ghost text-xs h-8 px-3"
+              >
+                IELTS_Task2.pdf
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
