@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { 
-  GraduationCap, 
-  BookOpen, 
-  ArrowRight, 
-  ShieldCheck, 
-  ArrowLeft 
+  ArrowRight,
+  ArrowLeft,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { User, UserRole } from '../types/auth';
 
@@ -86,6 +85,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
 }) => {
   const [authMode, setAuthMode] = useState<'login' | 'register'>(initialMode);
   const [selectedRole, setSelectedRole] = useState<UserRole>(initialRole);
+  const [showDemos, setShowDemos] = useState(false);
   
   // Form fields
   const [fullName, setFullName] = useState('');
@@ -118,229 +118,206 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
   };
 
   return (
-    <div className="min-h-[calc(100vh-60px)] bg-[#111318] text-white flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen w-full flex flex-col md:flex-row">
       
-      {/* Back button */}
-      <div className="max-w-md w-full mx-auto mb-6">
-        <button
-          onClick={onBackToLanding}
-          className="inline-flex items-center gap-2 text-xs font-mono-tag text-white/50 hover:text-white transition-colors"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Вернуться на главную</span>
-        </button>
+      {/* LEFT SIDE - Brand Showcase */}
+      <div className="w-full md:w-1/2 bg-[#F5F2E8] text-[#111318] p-8 md:p-16 flex flex-col justify-between">
+        <div>
+          <button
+            onClick={onBackToLanding}
+            className="inline-flex items-center gap-2 text-xs font-mono-tag text-[#111318]/60 hover:text-[#111318] transition-colors mb-12"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>НА ГЛАВНУЮ</span>
+          </button>
+
+          <h1 className="font-display font-black text-5xl md:text-7xl leading-tight mb-8">
+            FILL AI.
+          </h1>
+          
+          <div className="space-y-6 max-w-md">
+            <h2 className="font-display text-xl md:text-2xl font-bold">
+              Живая трансформация лекционного контента.
+            </h2>
+            
+            <div className="font-mono-tag text-sm bg-[#111318] text-[#AEDB00] inline-block px-3 py-1.5 rounded-sm">
+              SOURCE → FILL AI → TRANSFORMED
+            </div>
+            
+            <p className="font-body text-base text-[#111318]/80 leading-relaxed">
+              Интеллектуальная платформа для преподавателей и студентов. 
+              Превращаем сырой аудиопоток в структурированные конспекты, карточки и тесты в реальном времени.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-16 md:mt-0 grid grid-cols-1 sm:grid-cols-3 gap-6 pt-8 border-t border-[#111318]/10">
+          <div>
+            <div className="font-display font-black text-3xl text-[#2A46C7] mb-1">84%</div>
+            <div className="font-mono-tag text-[10px] uppercase text-[#111318]/70">Экономия времени</div>
+          </div>
+          <div>
+            <div className="font-display font-black text-3xl text-[#2A46C7] mb-1">&lt;800</div>
+            <div className="font-mono-tag text-[10px] uppercase text-[#111318]/70">МС Задержка</div>
+          </div>
+          <div>
+            <div className="font-display font-black text-3xl text-[#2A46C7] mb-1">94%</div>
+            <div className="font-mono-tag text-[10px] uppercase text-[#111318]/70">Вовлеченность</div>
+          </div>
+        </div>
       </div>
 
-      <div className="max-w-md w-full mx-auto bg-[#0a0c10] border border-white/15 rounded-2xl p-6 sm:p-8 shadow-2xl">
-        
-        {/* Brand Header */}
-        <div className="flex items-center justify-between border-b border-white/10 pb-5 mb-6">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-[#2A46C7] flex items-center justify-center text-white font-display font-black text-sm">
+      {/* RIGHT SIDE - Auth Form */}
+      <div className="w-full md:w-1/2 bg-[#111318] text-white flex flex-col justify-center items-center p-8 md:p-16">
+        <div className="w-full max-w-md">
+          
+          <div className="mb-8">
+            <div className="w-10 h-10 bg-[#2A46C7] rounded-sm flex items-center justify-center font-display font-black text-lg mb-6">
               F
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-display font-bold text-sm text-white">FILL AI</span>
-                <span className="text-[9px] font-mono-tag px-1.5 py-0.2 bg-[#AEDB00] text-[#111318] font-bold rounded">
-                  AUTH
-                </span>
-              </div>
-              <div className="text-[11px] text-white/50 font-mono-tag">
-                {authMode === 'login' ? 'Вход в личный кабинет' : 'Регистрация нового пользователя'}
-              </div>
-            </div>
+            <h2 className="font-display text-3xl font-bold mb-2">
+              {authMode === 'login' ? 'Войти в FILL AI' : 'Создать аккаунт'}
+            </h2>
+            <p className="font-body text-sm text-white/60">
+              {authMode === 'login' 
+                ? 'Добро пожаловать назад. Пожалуйста, введите ваши данные.'
+                : 'Присоединяйтесь к платформе нового поколения.'}
+            </p>
           </div>
-        </div>
 
-        {/* Auth Mode Toggle (Login vs Register) */}
-        <div className="grid grid-cols-2 p-1 bg-[#141822] rounded-lg border border-white/10 gap-1 mb-6 text-xs font-medium">
-          <button
-            type="button"
-            onClick={() => setAuthMode('login')}
-            className={`py-2 px-3 rounded-md transition-all text-center ${
-              authMode === 'login'
-                ? 'bg-[#2A46C7] text-white font-semibold shadow-sm'
-                : 'text-white/60 hover:text-white'
-            }`}
-          >
-            Вход в систему
-          </button>
-          <button
-            type="button"
-            onClick={() => setAuthMode('register')}
-            className={`py-2 px-3 rounded-md transition-all text-center ${
-              authMode === 'register'
-                ? 'bg-[#2A46C7] text-white font-semibold shadow-sm'
-                : 'text-white/60 hover:text-white'
-            }`}
-          >
-            Регистрация
-          </button>
-        </div>
-
-        {/* Role Selector Tabs (Teacher vs Student) */}
-        <div className="mb-6">
-          <label className="text-[10px] font-mono-tag uppercase text-white/50 block mb-2">
-            Выберите вашу роль:
-          </label>
-          <div className="grid grid-cols-2 gap-2 text-xs">
+          <div className="flex gap-2 mb-8 border-b border-white/10 pb-4">
             <button
-              type="button"
               onClick={() => setSelectedRole('teacher')}
-              className={`p-3 rounded-xl border flex items-center gap-2.5 transition-all text-left ${
-                selectedRole === 'teacher'
-                  ? 'border-[#2A46C7] bg-[#1a2340] text-white'
-                  : 'border-white/10 bg-[#12151c] text-white/60 hover:border-white/20'
+              className={`font-mono-tag text-xs uppercase px-4 py-2 rounded-sm transition-colors ${
+                selectedRole === 'teacher' ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white'
               }`}
             >
-              <GraduationCap className={`w-4 h-4 ${selectedRole === 'teacher' ? 'text-[#AEDB00]' : 'text-white/40'}`} />
-              <div>
-                <div className="font-semibold">Преподаватель</div>
-                <div className="text-[10px] text-white/40">Студия эфира</div>
-              </div>
+              Преподаватель
             </button>
+            <button
+              onClick={() => setSelectedRole('student')}
+              className={`font-mono-tag text-xs uppercase px-4 py-2 rounded-sm transition-colors ${
+                selectedRole === 'student' ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white'
+              }`}
+            >
+              Студент
+            </button>
+          </div>
+
+          <form onSubmit={handleFormSubmit} className="space-y-5">
+            {authMode === 'register' && (
+              <div className="space-y-1.5">
+                <label className="font-mono-tag text-[10px] uppercase text-white/50">Полное имя</label>
+                <input
+                  type="text"
+                  required
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className="w-full bg-transparent border-b border-white/20 px-0 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#2A46C7] transition-colors font-body rounded-none"
+                  placeholder="Иван Иванов"
+                />
+              </div>
+            )}
+
+            <div className="space-y-1.5">
+              <label className="font-mono-tag text-[10px] uppercase text-white/50">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full bg-transparent border-b border-white/20 px-0 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#2A46C7] transition-colors font-body rounded-none"
+                placeholder="email@example.com"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <div className="flex justify-between items-center">
+                <label className="font-mono-tag text-[10px] uppercase text-white/50">Пароль</label>
+                {authMode === 'login' && (
+                  <button type="button" className="font-mono-tag text-[10px] text-[#AEDB00] hover:underline">
+                    Забыли пароль?
+                  </button>
+                )}
+              </div>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full bg-transparent border-b border-white/20 px-0 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#2A46C7] transition-colors font-body rounded-none"
+                placeholder="••••••••"
+              />
+            </div>
+
+            {authMode === 'register' && (
+              <div className="space-y-1.5">
+                <label className="font-mono-tag text-[10px] uppercase text-white/50">Организация</label>
+                <input
+                  type="text"
+                  value={organization}
+                  onChange={(e) => setOrganization(e.target.value)}
+                  className="w-full bg-transparent border-b border-white/20 px-0 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#2A46C7] transition-colors font-body rounded-none"
+                  placeholder="Университет / Школа"
+                />
+              </div>
+            )}
 
             <button
-              type="button"
-              onClick={() => setSelectedRole('student')}
-              className={`p-3 rounded-xl border flex items-center gap-2.5 transition-all text-left ${
-                selectedRole === 'student'
-                  ? 'border-[#2A46C7] bg-[#1a2340] text-white'
-                  : 'border-white/10 bg-[#12151c] text-white/60 hover:border-white/20'
-              }`}
+              type="submit"
+              className="w-full bg-[#2A46C7] hover:bg-[#3451D8] text-white font-mono-tag text-xs uppercase tracking-wider py-4 rounded-sm transition-colors mt-6 flex justify-center items-center gap-2"
             >
-              <BookOpen className={`w-4 h-4 ${selectedRole === 'student' ? 'text-[#AEDB00]' : 'text-white/40'}`} />
-              <div>
-                <div className="font-semibold">Студент / Ученик</div>
-                <div className="text-[10px] text-white/40">Плеер лекций</div>
-              </div>
+              {authMode === 'login' ? 'Войти' : 'Зарегистрироваться'}
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </form>
+
+          <div className="mt-6 text-center">
+            <button
+              type="button"
+              onClick={() => setAuthMode(authMode === 'login' ? 'register' : 'login')}
+              className="font-mono-tag text-[10px] text-white/50 hover:text-white transition-colors"
+            >
+              {authMode === 'login' 
+                ? 'Нет аккаунта? Зарегистрироваться' 
+                : 'Уже есть аккаунт? Войти'}
             </button>
           </div>
-        </div>
 
-        {/* 1-Click Fast Demo Accounts (Best for Fair & Rapid Testing) */}
-        <div className="mb-6 pt-4 border-t border-white/10">
-          <div className="flex items-center justify-between mb-2.5">
-            <span className="text-[10px] font-mono-tag uppercase text-white/50">
-              Быстрый демо-вход в 1 клик:
-            </span>
-            <span className="text-[9px] font-mono-tag text-[#AEDB00]">
-              ГОТОВЫЕ ПРОФИЛИ
-            </span>
-          </div>
-
-          <div className="space-y-2">
-            {(selectedRole === 'teacher' ? DEMO_TEACHERS : DEMO_STUDENTS).map((acc) => (
-              <button
-                key={acc.id}
-                type="button"
-                onClick={() => handleDemoLogin(acc)}
-                className="w-full p-2.5 rounded-lg bg-[#141720] border border-white/10 hover:border-[#2A46C7] transition-all text-left flex items-center justify-between group"
-              >
-                <div className="flex items-center gap-2.5">
-                  <div className="w-7 h-7 rounded bg-[#2A46C7]/30 border border-[#2A46C7]/60 text-white font-mono-tag text-[10px] font-bold flex items-center justify-center">
-                    {acc.initials}
-                  </div>
-                  <div>
-                    <div className="text-xs font-semibold text-white group-hover:text-[#AEDB00] transition-colors">
-                      {acc.name}
+          <div className="mt-12">
+            <button 
+              onClick={() => setShowDemos(!showDemos)}
+              className="flex items-center gap-2 font-mono-tag text-[10px] uppercase text-white/40 hover:text-white/80 transition-colors"
+            >
+              Быстрый демо-вход
+              {showDemos ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+            </button>
+            
+            {showDemos && (
+              <div className="mt-4 space-y-2">
+                {(selectedRole === 'teacher' ? DEMO_TEACHERS : DEMO_STUDENTS).map((acc) => (
+                  <button
+                    key={acc.id}
+                    type="button"
+                    onClick={() => handleDemoLogin(acc)}
+                    className="w-full flex items-center justify-between p-3 bg-white/5 hover:bg-white/10 rounded-sm transition-colors group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-[#2A46C7]/20 text-[#2A46C7] font-mono-tag text-xs font-bold flex items-center justify-center rounded-sm">
+                        {acc.initials}
+                      </div>
+                      <div className="text-left">
+                        <div className="font-body text-sm text-white group-hover:text-[#AEDB00] transition-colors">{acc.name}</div>
+                        <div className="font-mono-tag text-[9px] text-white/40 uppercase">{acc.org}</div>
+                      </div>
                     </div>
-                    <div className="text-[10px] text-white/40">
-                      {acc.org} · {acc.discipline}
-                    </div>
-                  </div>
-                </div>
-                <ArrowRight className="w-3.5 h-3.5 text-white/30 group-hover:text-white transition-colors" />
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Divider */}
-        <div className="relative flex items-center justify-center my-6">
-          <div className="border-t border-white/10 w-full" />
-          <span className="bg-[#0a0c10] px-3 font-mono-tag text-[10px] text-white/40 uppercase tracking-wider absolute">
-            или введите данные
-          </span>
-        </div>
-
-        {/* Custom Form */}
-        <form onSubmit={handleFormSubmit} className="space-y-4">
-          {authMode === 'register' && (
-            <div>
-              <label className="text-[10px] font-mono-tag uppercase text-white/50 block mb-1">
-                ФИО пользователя
-              </label>
-              <input
-                type="text"
-                required
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                placeholder={selectedRole === 'teacher' ? 'Проф. Аскар Ибраев' : 'Алихан Смагулов'}
-                className="w-full bg-[#12151c] border border-white/15 rounded-lg px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none focus:border-[#2A46C7]"
-              />
-            </div>
-          )}
-
-          <div>
-            <label className="text-[10px] font-mono-tag uppercase text-white/50 block mb-1">
-              Электронная почта
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="user@university.kz"
-              className="w-full bg-[#12151c] border border-white/15 rounded-lg px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none focus:border-[#2A46C7]"
-            />
+                    <ArrowRight className="w-4 h-4 text-white/20 group-hover:text-white/60" />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
-          <div>
-            <label className="text-[10px] font-mono-tag uppercase text-white/50 block mb-1">
-              Пароль
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full bg-[#12151c] border border-white/15 rounded-lg px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none focus:border-[#2A46C7]"
-            />
-          </div>
-
-          {authMode === 'register' && (
-            <div>
-              <label className="text-[10px] font-mono-tag uppercase text-white/50 block mb-1">
-                Учебное заведение / Организация
-              </label>
-              <input
-                type="text"
-                value={organization}
-                onChange={(e) => setOrganization(e.target.value)}
-                placeholder="КазНУ им. аль-Фараби"
-                className="w-full bg-[#12151c] border border-white/15 rounded-lg px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none focus:border-[#2A46C7]"
-              />
-            </div>
-          )}
-
-          <button
-            type="submit"
-            className="w-full btn-brand-blue h-10 text-xs font-semibold flex items-center justify-center gap-2 mt-4"
-          >
-            <span>{authMode === 'login' ? 'Войти в кабинет' : 'Завершить регистрацию'}</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </form>
-
-        {/* Security badge */}
-        <div className="mt-6 pt-4 border-t border-white/10 flex items-center justify-center gap-2 text-[10px] font-mono-tag text-white/40">
-          <ShieldCheck className="w-3.5 h-3.5 text-[#AEDB00]" />
-          <span>Защищенный шлюз · Соответствует стандартам МОН РК</span>
         </div>
-
       </div>
-
     </div>
   );
 };

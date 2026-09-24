@@ -33,8 +33,10 @@ export default {
         'fill-danger-soft': 'var(--danger-soft)',
       },
       fontFamily: {
-        head: ['Manrope', 'sans-serif'],
-        body: ['IBM Plex Sans', 'sans-serif'],
+        display: ['Space Grotesk', 'sans-serif'],
+        body: ['Inter', 'sans-serif'],
+        mono: ['JetBrains Mono', 'monospace'],
+        serif: ['DM Serif Display', 'serif'],
       },
       borderRadius: {
         'sm': 'var(--radius-sm)',

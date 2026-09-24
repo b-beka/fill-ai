@@ -24,9 +24,10 @@
   --accent-success: #10b981;
   --accent-warning: #f59e0b;
 
-  --font-display: 'Sora', sans-serif;
+  --font-display: 'Space Grotesk', sans-serif;
   --font-body: 'Inter', -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
+  --font-serif: 'DM Serif Display', serif;
 
   color-scheme: dark;
 }
@@ -49,13 +50,13 @@ html {
 
 h1, h2, h3, h4, h5 {
   font-family: var(--font-display);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   font-weight: 500;
 }
 
 ::selection {
-  background: #ffffff;
-  color: #000000;
+  background: #2A46C7;
+  color: #ffffff;
 }
 
 :focus-visible {
@@ -69,6 +70,9 @@ h1, h2, h3, h4, h5 {
 }
 .font-mono-tag {
   font-family: var(--font-mono);
+}
+.font-serif {
+  font-family: var(--font-serif);
 }
 
 /* Solid Clean Buttons (Zero Gradients) */

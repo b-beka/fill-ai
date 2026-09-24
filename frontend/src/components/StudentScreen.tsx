@@ -15,14 +15,14 @@ import {
   X,
   ArrowLeft
 } from 'lucide-react';
-import { ALL_TRACKS, CurriculumTrack } from '../services/mockData';
+import { ALL_TRACKS } from '../services/mockData';
 
 interface StudentScreenProps {
   onBackToLanding?: () => void;
 }
 
 export const StudentScreen: React.FC<StudentScreenProps> = ({ onBackToLanding }) => {
-  const [currentTrack, setCurrentTrack] = useState<CurriculumTrack>(ALL_TRACKS[0]);
+  const [currentTrack] = useState(ALL_TRACKS[0]);
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState<string | null>(null);
@@ -45,12 +45,6 @@ export const StudentScreen: React.FC<StudentScreenProps> = ({ onBackToLanding })
         origin: { y: 0.7 }
       });
     }
-  };
-
-  const handleTrackChange = (track: CurriculumTrack) => {
-    setCurrentTrack(track);
-    setSelectedOptionId(null);
-    setIsAnswered(false);
   };
 
   const handleSendQuestion = (e: React.FormEvent) => {
@@ -99,22 +93,7 @@ export const StudentScreen: React.FC<StudentScreenProps> = ({ onBackToLanding })
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-            {/* Subject Switcher */}
-            <div className="flex items-center gap-1 bg-[#161a24] p-1 rounded-lg border border-white/10">
-              {ALL_TRACKS.map((t) => (
-                <button
-                  key={t.id}
-                  onClick={() => handleTrackChange(t)}
-                  className={`text-xs font-medium py-1 px-2.5 rounded transition-all ${
-                    currentTrack.id === t.id
-                      ? 'bg-[#2A46C7] text-white font-semibold'
-                      : 'text-white/50 hover:text-white'
-                  }`}
-                >
-                  {t.name.split(':')[0]}
-                </button>
-              ))}
-            </div>
+
 
             {/* Simple Catch-up button */}
             <button
