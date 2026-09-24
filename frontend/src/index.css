@@ -50,9 +50,12 @@
   --radius-lg: 18px;
   --shadow-sm: 0 1px 3px rgba(0,0,0,.6);
   --shadow-md: 0 8px 30px rgba(0,0,0,.8);
-  --font-head: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-head: 'Sora', 'Inter', system-ui, sans-serif;
   --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: 'Sora', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
   --font-serif: 'Instrument Serif', Georgia, serif;
+  --orange-grad: linear-gradient(163deg, #FBBC94 0%, #F49D70 46%, #E88654 100%);
   color-scheme: dark;
 }
 
@@ -419,3 +422,88 @@ h1, h2, h3, h4, h5 {
     transform: none !important;
   }
 }
+
+/* Fastshot & ECHOID Harmonic Elements */
+.font-display {
+  font-family: 'Sora', sans-serif;
+}
+.font-mono-tag {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.composer-card {
+  background: rgba(30, 32, 38, 0.88);
+  backdrop-filter: blur(24px) saturate(120%);
+  -webkit-backdrop-filter: blur(24px) saturate(120%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  border-radius: 22px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.composer-card:hover {
+  border-color: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.composer-chip {
+  height: 30px;
+  border-radius: 9px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #a0a2a8;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  background: linear-gradient(180deg, rgba(255,255,255,.09) 0%, rgba(255,255,255,.04) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.composer-chip:hover {
+  background: linear-gradient(180deg, rgba(255,255,255,.16) 0%, rgba(255,255,255,.08) 100%);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.22);
+}
+.composer-chip.active {
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.btn-orange-send {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(163deg, #FBBC94 0%, #F49D70 46%, #E88654 100%);
+  box-shadow: 0 3px 14px rgba(232, 134, 84, 0.45);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #111;
+  transition: transform 0.2s ease, filter 0.2s ease;
+  cursor: pointer;
+  border: none;
+  flex-shrink: 0;
+}
+.btn-orange-send:hover {
+  filter: brightness(1.1);
+  transform: scale(1.05);
+}
+.btn-orange-send:active {
+  transform: scale(0.95);
+}
+
+.echoid-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  padding: 6px 14px;
+  border-radius: 4px;
+}
+
