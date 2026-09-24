@@ -8,7 +8,6 @@ import {
   Users, 
   Check, 
   Copy, 
-  Sparkles, 
   ShieldCheck, 
   Maximize2, 
   FileText, 
@@ -148,7 +147,7 @@ export const TeacherLiveScreen: React.FC = () => {
               style={{ boxShadow: '0 20px 50px rgba(0,0,0,0.8)' }}
             >
               {/* Broadcast Screen Canvas: Live Presentation Stream */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-gradient-to-tr from-[#0a0f18] via-[#06080b] to-[#08120b]">
+              <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-[#0a0c10]">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-xs font-mono-tag text-emerald-400 bg-black/60 px-2.5 py-1 rounded border border-white/10">
                     Слайд 02/08 · {uploadedPdfName}
@@ -194,7 +193,7 @@ export const TeacherLiveScreen: React.FC = () => {
               </div>
 
               {/* Bottom Studio Controls Bar (OBS/YouTube Pro Style) */}
-              <div className="relative z-10 p-3.5 bg-gradient-to-t from-black/95 via-black/80 to-transparent flex flex-wrap items-center justify-between gap-3 text-xs text-white">
+              <div className="relative z-10 p-3.5 bg-[#07080a]/95 border-t border-white/10 flex flex-wrap items-center justify-between gap-3 text-xs text-white">
                 
                 <div className="flex items-center gap-2.5">
                   {/* Broadcast Play/Pause */}
@@ -264,7 +263,7 @@ export const TeacherLiveScreen: React.FC = () => {
             <div className="rounded-2xl bg-[#0a0c10] border border-white/15 p-5 shadow-xl flex flex-col gap-3.5">
               
               <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
-                <span className="echoid-tag text-[10px]">
+                <span className="tech-label text-[10px]">
                   ОПРОС В ЭФИРЕ
                 </span>
                 <span className="text-xs font-mono-tag text-emerald-400">
@@ -307,9 +306,9 @@ export const TeacherLiveScreen: React.FC = () => {
               <div className="pt-2 flex items-center gap-2">
                 <button
                   onClick={handleTriggerQuiz}
-                  className="btn-liquid-solid text-xs h-9 flex-1 flex items-center justify-center gap-1.5"
+                  className="btn-solid text-xs h-9 flex-1 flex items-center justify-center gap-1.5"
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-black" />
+                  <Play className="w-3 h-3 text-black fill-black" />
                   <span>Следующий вопрос классу</span>
                 </button>
               </div>
@@ -334,7 +333,7 @@ export const TeacherLiveScreen: React.FC = () => {
 
               <button
                 onClick={handleCopyReport}
-                className="btn-liquid-ghost text-xs h-8 w-full flex items-center justify-center gap-1.5 mt-1"
+                className="btn-outline text-xs h-8 w-full flex items-center justify-center gap-1.5 mt-1"
               >
                 {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                 <span>{isCopied ? 'Отчёт скопирован!' : 'Скопировать отчёт для WhatsApp'}</span>
@@ -443,7 +442,7 @@ export const TeacherLiveScreen: React.FC = () => {
                   setUploadedPdfName('Биомембраны_Лекция_02.pdf');
                   setShowUploadModal(false);
                 }}
-                className="composer-chip text-xs justify-start h-9"
+                className="w-full text-left p-2.5 rounded-lg bg-[#12141a] border border-white/10 hover:border-white/30 text-white/80 transition-colors text-xs"
               >
                 Биомембраны_Лекция_02.pdf (8 слайдов)
               </button>
@@ -452,7 +451,7 @@ export const TeacherLiveScreen: React.FC = () => {
                   setUploadedPdfName('Async_Python_FastAPI.pdf');
                   setShowUploadModal(false);
                 }}
-                className="composer-chip text-xs justify-start h-9"
+                className="w-full text-left p-2.5 rounded-lg bg-[#12141a] border border-white/10 hover:border-white/30 text-white/80 transition-colors text-xs"
               >
                 Async_Python_FastAPI.pdf (6 слайдов)
               </button>
@@ -485,7 +484,7 @@ export const TeacherLiveScreen: React.FC = () => {
                 <span className="text-amber-400 font-mono-tag">Пропуск 1 темы (Выжимка отправлена)</span>
               </div>
             </div>
-            <button onClick={() => setShowAttendanceModal(false)} className="btn-liquid-solid text-xs h-8 w-full">
+            <button onClick={() => setShowAttendanceModal(false)} className="btn-solid text-xs h-8 w-full">
               Закрыть
             </button>
           </div>

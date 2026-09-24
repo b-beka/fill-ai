@@ -128,7 +128,7 @@ export const StudentScreen: React.FC = () => {
               style={{ boxShadow: '0 20px 50px rgba(0,0,0,0.8)' }}
             >
               {/* Video Simulated Slide Canvas */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-gradient-to-tr from-[#0a0f18] via-[#06080b] to-[#08120b]">
+              <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-[#0a0c10]">
                 <div className="text-xs font-mono-tag text-emerald-400 mb-2">
                   Слайд #02 · Синхронизация активна
                 </div>
@@ -152,7 +152,7 @@ export const StudentScreen: React.FC = () => {
               </div>
 
               {/* Bottom Controls */}
-              <div className="relative z-10 p-3 bg-gradient-to-t from-black/90 to-transparent flex items-center justify-between text-xs text-white">
+              <div className="relative z-10 p-3 bg-[#07080a]/95 border-t border-white/10 flex items-center justify-between text-xs text-white">
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => setIsVideoPlaying((p) => !p)}
@@ -191,7 +191,7 @@ export const StudentScreen: React.FC = () => {
             {/* Live Question Card */}
             <div className="rounded-2xl bg-[#0a0c10] border border-white/15 p-5 shadow-xl flex flex-col gap-3.5">
               <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
-                <span className="echoid-tag text-[10px]">
+                <span className="tech-label text-[10px]">
                   ВОПРОС ОТ УЧИТЕЛЯ
                 </span>
                 <span className="text-xs font-mono-tag text-white/50 flex items-center gap-1">
@@ -273,7 +273,7 @@ export const StudentScreen: React.FC = () => {
                 <button
                   type="submit"
                   disabled={!questionInput.trim()}
-                  className="btn-liquid-solid text-xs h-8 px-3 disabled:opacity-40"
+                  className="btn-solid text-xs h-8 px-3 disabled:opacity-40"
                 >
                   <Send className="w-3 h-3 text-black" />
                 </button>
@@ -390,7 +390,7 @@ export const StudentScreen: React.FC = () => {
                 <span className="text-white/70">Идёт против градиента концентрации с расходом энергии АТФ.</span>
               </div>
             </div>
-            <button onClick={() => setShowCatchupModal(false)} className="btn-liquid-solid text-xs h-8 w-full mt-2">
+            <button onClick={() => setShowCatchupModal(false)} className="btn-solid text-xs h-8 w-full mt-2">
               Вернуться к уроку
             </button>
           </div>

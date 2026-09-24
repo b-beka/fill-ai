@@ -126,7 +126,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         {/* Top Header */}
         <div className="flex items-start justify-between">
           <div>
-            <div className="echoid-tag inline-block mb-2">
+            <div className="tech-label inline-block mb-2">
               ВХОД В СИСТЕМУ
             </div>
             <h2 className="text-xl sm:text-2xl font-display font-normal text-white">
@@ -241,7 +241,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <button
               type="submit"
               disabled={!customName.trim()}
-              className="btn-liquid-solid text-xs h-9 px-5 disabled:opacity-40 flex items-center gap-1.5"
+              className="btn-solid text-xs h-9 px-5 disabled:opacity-40 flex items-center gap-1.5"
             >
               <span>Войти как {selectedRole === 'teacher' ? 'Преподаватель' : 'Студент'}</span>
               <ArrowRight className="w-3.5 h-3.5" />

@@ -69,13 +69,8 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ onNavigate, onOpen
           />
         </div>
 
-        {/* Ambient Dark Scrim */}
-        <div 
-          className="absolute inset-0 pointer-events-none z-1"
-          style={{
-            background: 'linear-gradient(180deg, rgba(8,10,14,0.65) 0%, rgba(8,10,14,0.4) 40%, rgba(6,8,11,0.95) 100%)'
-          }}
-        />
+        {/* Ambient Dark Scrim: Pure Solid Mask Without Gradients */}
+        <div className="absolute inset-0 bg-[#07080a]/75 pointer-events-none z-1" />
 
         {/* Top Tag */}
         <div className="relative z-10 w-full pt-10 sm:pt-16 flex items-center justify-center">
@@ -83,7 +78,7 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ onNavigate, onOpen
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="echoid-tag flex items-center gap-2"
+            className="tech-label flex items-center gap-2"
           >
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
             <span>ОПЕРАЦИОННАЯ СИСТЕМА ДЛЯ ЖИВЫХ ЛЕКЦИЙ</span>
@@ -121,7 +116,7 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ onNavigate, onOpen
           >
             <button
               onClick={() => onNavigate('live')}
-              className="btn-liquid-solid text-xs sm:text-sm h-11 px-5 flex items-center gap-2 font-medium"
+              className="btn-solid text-xs sm:text-sm h-11 px-5 flex items-center gap-2 font-medium"
             >
               <GraduationCap className="w-4 h-4 text-black" />
               <span>Кабинет преподавателя</span>
@@ -129,7 +124,7 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ onNavigate, onOpen
 
             <button
               onClick={() => onNavigate('student')}
-              className="btn-liquid-ghost text-xs sm:text-sm h-11 px-5 flex items-center gap-2 font-medium"
+              className="btn-outline text-xs sm:text-sm h-11 px-5 flex items-center gap-2 font-medium"
             >
               <BookOpen className="w-4 h-4 text-white" />
               <span>Кабинет ученика</span>
@@ -253,7 +248,7 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ onNavigate, onOpen
           <div className="grid grid-cols-1 md:grid-cols-12 gap-10 items-center">
             
             <div className="md:col-span-7">
-              <div className="echoid-tag inline-block mb-3">
+              <div className="tech-label inline-block mb-3">
                 О ПРОЕКТЕ И КОМАНДЕ
               </div>
               <h2 className="text-2xl sm:text-4xl font-display font-normal text-white tracking-tight leading-tight">
@@ -320,7 +315,7 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ onNavigate, onOpen
         <div className="max-w-5xl mx-auto">
           
           <div className="text-center max-w-2xl mx-auto mb-14">
-            <div className="echoid-tag inline-block mb-3">
+            <div className="tech-label inline-block mb-3">
               ОТЗЫВЫ ПРЕПОДАВАТЕЛЕЙ И СТУДЕНТОВ
             </div>
             <h2 className="text-2xl sm:text-4xl font-display font-normal text-white tracking-tight">
@@ -393,14 +388,14 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ onNavigate, onOpen
           <div className="flex flex-wrap items-center justify-center gap-4">
             <button
               onClick={() => onNavigate('live')}
-              className="btn-liquid-solid text-xs sm:text-sm h-10 px-6 flex items-center gap-2"
+              className="btn-solid text-xs sm:text-sm h-10 px-6 flex items-center gap-2"
             >
               <GraduationCap className="w-4 h-4 text-black" />
               <span>Кабинет преподавателя</span>
             </button>
             <button
               onClick={() => onNavigate('student')}
-              className="btn-liquid-ghost text-xs sm:text-sm h-10 px-6 flex items-center gap-2"
+              className="btn-outline text-xs sm:text-sm h-10 px-6 flex items-center gap-2"
             >
               <BookOpen className="w-4 h-4 text-white" />
               <span>Кабинет ученика</span>
