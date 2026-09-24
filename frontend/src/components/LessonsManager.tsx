@@ -48,6 +48,14 @@ export const LessonsManager: React.FC<LessonsManagerProps> = ({ onBackendStatusC
       setBackendStatus('online');
       setReadinessChecks(res.checks || {});
       onBackendStatusChange?.(true);
+      try {
+        const loaded = await api.listLessons();
+        if (loaded && loaded.length > 0) {
+          setLessons(loaded);
+        }
+      } catch {
+        // silent fallback
+      }
     } catch {
       setBackendStatus('offline');
       onBackendStatusChange?.(false);

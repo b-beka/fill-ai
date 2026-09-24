@@ -17,6 +17,7 @@ from app.api.schemas.attendance import (
 )
 from app.core.logging import get_logger
 from app.core.security import CurrentUser, get_current_user, require_role
+from app.core.demo_store import demo_store
 from app.models.attendance import StudentAttendance
 from app.models.lesson import Lesson
 from app.models.note import NoteBlock
@@ -127,22 +128,33 @@ async def get_lesson_attendance(
 ) -> Any:
     """Returns comprehensive attendance and engagement intelligence for a lesson."""
     # Fetch all attendances
-    att_stmt = (
-        select(StudentAttendance)
-        .where(StudentAttendance.lesson_id == lesson.id)
-        .order_by(StudentAttendance.student_name.asc())
-    )
-    att_res = await db.execute(att_stmt)
-    attendances = att_res.scalars().all()
+    attendances = []
+    blocks_list = []
+    try:
+        att_stmt = (
+            select(StudentAttendance)
+            .where(StudentAttendance.lesson_id == lesson.id)
+            .order_by(StudentAttendance.student_name.asc())
+        )
+        att_res = await db.execute(att_stmt)
+        attendances = att_res.scalars().all()
 
-    # Fetch note blocks for semantic mapping
-    blocks_stmt = (
-        select(NoteBlock)
-        .where(NoteBlock.lesson_id == lesson.id)
-        .order_by(NoteBlock.t_start_ms.asc())
-    )
-    blocks_res = await db.execute(blocks_stmt)
-    blocks = {str(b.id): b for b in blocks_res.scalars().all()}
+        blocks_stmt = (
+            select(NoteBlock)
+            .where(NoteBlock.lesson_id == lesson.id)
+            .order_by(NoteBlock.t_start_ms.asc())
+        )
+        blocks_res = await db.execute(blocks_stmt)
+        blocks_list = blocks_res.scalars().all()
+    except Exception as e:
+        logger.info("get_lesson_attendance_db_offline_fallback", error=str(e))
+
+    if not attendances:
+        attendances = demo_store.get_attendances(lesson.id)
+    if not blocks_list:
+        blocks_list = demo_store.get_blocks(lesson.id)
+
+    blocks = {str(b.id): b for b in blocks_list}
 
     # Assume lesson planned duration is 45 min or based on latest block/now
     lesson_duration_ms = 45 * 60 * 1000

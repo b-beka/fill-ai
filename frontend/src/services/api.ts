@@ -111,6 +111,10 @@ export class ApiClient {
     });
   }
 
+  async listLessons(): Promise<Lesson[]> {
+    return this.request<Lesson[]>('/v1/lessons');
+  }
+
   async getLesson(lessonId: string): Promise<Lesson> {
     return this.request<Lesson>(`/v1/lessons/${lessonId}`);
   }

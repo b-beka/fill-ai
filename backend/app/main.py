@@ -22,11 +22,12 @@ settings = get_settings()
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logger.info("app_starting", env=settings.ENVIRONMENT)
-    # Ensure S3 bucket is ready
+    # Ensure S3 bucket is ready (fast timeout for demo standalone mode)
+    import asyncio
     try:
-        await ensure_bucket_exists()
+        await asyncio.wait_for(ensure_bucket_exists(), timeout=0.5)
     except Exception as e:
-        logger.warning("s3_init_warning", error=str(e))
+        logger.info("s3_init_skipped_demo_mode", error=str(e))
 
     yield
 

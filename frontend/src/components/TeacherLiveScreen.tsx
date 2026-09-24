@@ -24,7 +24,8 @@ import {
   RotateCcw,
   BarChart3,
   Copy,
-  Send
+  Send,
+  Sparkles
 } from 'lucide-react';
 import { 
   ALL_TRACKS,
@@ -59,14 +60,154 @@ export const TeacherLiveScreen: React.FC<TeacherLiveScreenProps> = () => {
   const [sentCatchupIds, setSentCatchupIds] = useState<string[]>(['att-2']);
   const [isCopiedWhatsApp, setIsCopiedWhatsApp] = useState(false);
 
+  // Stand Interactive Demo & Speech Recognition (Fair Showcase)
+  const [isLiveDemoRunning, setIsLiveDemoRunning] = useState(false);
+  const [liveDemoNotification, setLiveDemoNotification] = useState<string | null>(null);
+  const [demoLiveTranscript, setDemoLiveTranscript] = useState<string>('');
+  const [isMicListening, setIsMicListening] = useState(false);
+  const [micTranscript, setMicTranscript] = useState<string>('');
+  const recognitionRef = React.useRef<any>(null);
+  const demoTimersRef = React.useRef<NodeJS.Timeout[]>([]);
+
+  const stopLiveDemo = () => {
+    demoTimersRef.current.forEach((t) => clearTimeout(t));
+    demoTimersRef.current = [];
+    setIsLiveDemoRunning(false);
+    setLiveDemoNotification(null);
+  };
+
+  const startLiveDemo = () => {
+    stopLiveDemo();
+    setIsLiveDemoRunning(true);
+    setIsTranscriptOpen(true);
+    setLiveState('listen');
+    setDemoLiveTranscript('«Итак, внимание на фосфолипидный бислой мембраны и ориентацию гидрофильных головок к водным средам...»');
+    setLiveDemoNotification('Шаг 1 из 5: Soniox ASR транскрибирует живую речь преподавателя.');
+
+    const t1 = setTimeout(() => {
+      setLiveState('process');
+      setDemoLiveTranscript('Gemini 3.5 Flash-Lite сопоставляет тезис со слайдом №2 и формирует медиа-фрейм...');
+      setLiveDemoNotification('Шаг 2 из 5: VLM формирует структурированный конспект с визуальной привязкой.');
+    }, 3500);
+
+    const t2 = setTimeout(() => {
+      const generatedBlock: NoteBlock = {
+        id: 'block-live-demo-generated',
+        lesson_id: currentTrack.lesson.id,
+        position: blocks.length,
+        t_start_ms: 42 * 60 * 1000,
+        t_end_ms: 43 * 60 * 1000,
+        title: 'Рецепторы и каскад передачи сигналов',
+        body_md: 'Клеточная мембрана отделяет внутреннее пространство клетки от внешней среды благодаря ориентации полярных головок к водным фазам. При связывании лиганда рецептор активирует вторичные посредники.',
+        status: 'pending_review',
+        key_terms: [{ term: 'Вторичный посредник', definition: 'Внутриклеточная молекула передачи внешнего сигнала от мембранного рецептора.' }],
+        media_artifact: {
+          type: 'photo',
+          title: 'Схема фосфолипидного бислоя',
+          caption: 'Схема мембраны из презентации урока',
+          align: 'right',
+          badge: 'Слайд 2',
+        },
+        version: 1,
+      };
+      setBlocks((prev) => [generatedBlock, ...prev.filter((b) => b.id !== 'block-live-demo-generated')]);
+      setLiveDemoNotification('Шаг 3 из 5: Новый блок появился в режиме «На проверке». Ученики увидят его после клика «Одобрить».');
+    }, 7000);
+
+    const t3 = setTimeout(() => {
+      setLiveState('question');
+      setDemoLiveTranscript('ИИ обнаружил проверочный вопрос в речи: запущен интерактивный микро-опрос аудитории.');
+      setLiveDemoNotification('Шаг 4 из 5: Вопрос активирован hands-free! Ученики отвечают со своих устройств.');
+    }, 11000);
+
+    const t4 = setTimeout(() => {
+      setLiveState('results');
+      setDemoLiveTranscript('Опрос завершен. 28 из 30 учеников ответили (точность 78%). Gemini Flash-Lite сформировал диагностический комментарий.');
+      setLiveDemoNotification('Шаг 5 из 5: Результаты агрегированы за 0ms, AI выдал диагностическую подсказку.');
+    }, 15500);
+
+    const t5 = setTimeout(() => {
+      setLiveDemoNotification('Демо завершено! Нажмите «Аналитика» или «Anki TSV» для демонстрации полного цикла.');
+      setIsLiveDemoRunning(false);
+    }, 20500);
+
+    demoTimersRef.current = [t1, t2, t3, t4, t5];
+  };
+
+  const toggleMicrophone = () => {
+    if (isMicListening) {
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch {
+          // ignore
+        }
+      }
+      setIsMicListening(false);
+      return;
+    }
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert('Web Speech API поддерживается в браузерах Google Chrome, Microsoft Edge и Safari.');
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = currentTrack.lesson.language === 'en' ? 'en-US' : 'ru-RU';
+
+      recognition.onstart = () => {
+        setIsMicListening(true);
+        setIsTranscriptOpen(true);
+        setLiveState('listen');
+      };
+
+      recognition.onresult = (event: any) => {
+        let text = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          text += event.results[i][0].transcript;
+        }
+        setMicTranscript(text);
+      };
+
+      recognition.onerror = () => {
+        setIsMicListening(false);
+      };
+
+      recognition.onend = () => {
+        setIsMicListening(false);
+      };
+
+      recognitionRef.current = recognition;
+      recognition.start();
+    } catch (err) {
+      console.error('Speech recognition error:', err);
+      setIsMicListening(false);
+    }
+  };
+
   useEffect(() => {
     const interval = setInterval(() => {
       setTimerSeconds((prev) => prev + 1);
     }, 1000);
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      demoTimersRef.current.forEach((t) => clearTimeout(t));
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch {
+          // ignore
+        }
+      }
+    };
   }, []);
 
   const handleTrackChange = (track: CurriculumTrack) => {
+    stopLiveDemo();
     setCurrentTrack(track);
     setBlocks(track.blocks);
     setLiveState('listen');
@@ -160,8 +301,43 @@ export const TeacherLiveScreen: React.FC<TeacherLiveScreenProps> = () => {
 
         <div className="flex-1" />
 
-        {/* Action Controls: Slides, Anki, Recording */}
-        <div className="flex items-center gap-2">
+        {/* Action Controls: Slides, Anki, Recording & Fair Demo */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={isLiveDemoRunning ? stopLiveDemo : startLiveDemo}
+            className={`btn text-xs py-1.5 px-3 flex items-center gap-1.5 font-bold transition-all shadow-sm ${
+              isLiveDemoRunning
+                ? 'bg-fill-danger text-white border-fill-danger animate-pulse'
+                : 'bg-fill-green-deep text-white hover:opacity-90'
+            }`}
+            title="Запустить интерактивную демонстрацию для ярмарки (5 шагов: речь -> ИИ -> конспект -> опрос -> аналитика)"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            {isLiveDemoRunning ? 'Остановить демо' : 'Запустить живой демо-поток'}
+          </button>
+
+          <button
+            onClick={toggleMicrophone}
+            className={`btn text-xs py-1.5 px-3 flex items-center gap-1.5 transition-all ${
+              isMicListening
+                ? 'bg-fill-blue text-white animate-pulse font-bold'
+                : 'btn-ghost'
+            }`}
+            title="Распознавание речи через Web Speech API прямо в браузере"
+          >
+            {isMicListening ? (
+              <>
+                <Mic className="w-3.5 h-3.5" />
+                Микрофон включен
+              </>
+            ) : (
+              <>
+                <Mic className="w-3.5 h-3.5 text-fill-blue" />
+                Микрофон (Web Speech)
+              </>
+            )}
+          </button>
+
           <button
             onClick={() => setActiveTab((prev) => (prev === 'notes' ? 'slides' : 'notes'))}
             className={`btn btn-ghost text-xs py-1.5 px-3 flex items-center gap-1.5 ${
@@ -200,6 +376,22 @@ export const TeacherLiveScreen: React.FC<TeacherLiveScreenProps> = () => {
           Стрим активен
         </span>
       </div>
+
+      {/* Live Demo Step-by-Step Notification Banner */}
+      {liveDemoNotification && (
+        <div className="bg-fill-blue-soft border-b border-fill-blue/20 px-4 sm:px-8 py-2 text-xs text-fill-blue-text font-medium flex items-center justify-between animate-fadeIn">
+          <span className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-fill-blue flex-none" />
+            <span>{liveDemoNotification}</span>
+          </span>
+          <button
+            onClick={() => setLiveDemoNotification(null)}
+            className="text-fill-text-faint hover:text-fill-text p-1"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
 
       {/* Curriculum Track Switcher & Status Bar */}
       <div className="bg-fill-surface-alt border-b border-fill-border px-4 sm:px-8 py-2.5 flex flex-wrap items-center justify-between gap-3">
@@ -728,6 +920,22 @@ export const TeacherLiveScreen: React.FC<TeacherLiveScreenProps> = () => {
 
         {isTranscriptOpen && (
           <div className="pb-4 text-[13.5px] text-fill-text-faint flex flex-col gap-2 max-w-3xl">
+            {/* Live speech from mic or automated showcase */}
+            {(micTranscript || demoLiveTranscript) && (
+              <div className="p-3 rounded-lg bg-fill-surface-alt border border-fill-blue/30 flex flex-col gap-1 mb-2 animate-fadeIn">
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="font-bold text-fill-blue flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-fill-blue animate-ping" />
+                    {isMicListening ? 'Живой микрофон (Web Speech ASR)' : 'Демо-поток речи'}
+                  </span>
+                  <span className="text-fill-text-faint font-mono">Прямой эфир</span>
+                </div>
+                <p className="text-[13.5px] text-fill-text font-medium leading-relaxed">
+                  {micTranscript || demoLiveTranscript}
+                </p>
+              </div>
+            )}
+
             {DEMO_TRANSCRIPT.map((seg, i) => (
               <div key={seg.id || i} className="flex flex-col gap-0.5">
                 <div className="flex items-center gap-2 text-[11px] text-fill-text-faint">
