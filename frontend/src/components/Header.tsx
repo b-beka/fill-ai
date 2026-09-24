@@ -25,25 +25,28 @@ export const Header: React.FC<HeaderProps> = ({
     <header className="sticky top-0 z-40 bg-[#07080a] border-b border-white/10 px-4 sm:px-8 h-[60px] flex items-center">
       <div className="w-full max-w-7xl mx-auto flex items-center justify-between gap-4">
         
-        {/* Left: Brand Logo */}
+        {/* Left: Brand Logo with Solid #2A46C7 & #AEDB00 */}
         <div 
           onClick={() => onScreenChange('landing')}
           className="flex items-center gap-3 cursor-pointer group select-none flex-none"
         >
-          <div className="w-7 h-7 rounded bg-[#161920] border border-white/20 flex items-center justify-center text-white">
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-              <g transform="rotate(-30 12 12)">
-                <circle cx="7.3" cy="3.2" r="1.45" />
-                <rect x="5.5" y="4.7" width="3.6" height="14.6" rx="1.8" />
-                <rect x="14.9" y="4.7" width="3.6" height="14.6" rx="1.8" />
-                <circle cx="16.7" cy="20.8" r="1.45" />
-              </g>
-            </svg>
+          <div className="w-8 h-8 rounded-lg bg-[#2A46C7] flex items-center justify-center text-white font-display font-black text-sm tracking-wider shadow-sm">
+            F
           </div>
 
-          <span className="font-display font-semibold text-sm tracking-tight text-white">
-            FILL AI
-          </span>
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2">
+              <span className="font-display font-bold text-sm tracking-tight text-white">
+                FILL AI
+              </span>
+              <span className="text-[9px] font-mono-tag px-1.5 py-0.2 bg-[#AEDB00] text-[#111318] font-bold rounded">
+                LIVE
+              </span>
+            </div>
+            <span className="text-[10px] font-mono-tag text-white/40 tracking-wider">
+              CONTENT SWAP ENGINE
+            </span>
+          </div>
         </div>
 
         {/* Center: Clean Architectural Nav Tabs */}

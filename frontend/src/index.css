@@ -140,6 +140,86 @@ h1, h2, h3, h4, h5 {
   background-color: rgba(255, 255, 255, 0.06);
 }
 
+/* FILL AI Signature Solid Brand Buttons */
+.btn-brand-blue {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: #2A46C7;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1;
+  border-radius: 6px;
+  padding: 10px 18px;
+  border: 1px solid #2A46C7;
+  cursor: pointer;
+  transition: opacity 0.15s ease, transform 0.1s ease;
+  white-space: nowrap;
+}
+.btn-brand-blue:hover {
+  opacity: 0.92;
+}
+.btn-brand-blue:active {
+  transform: scale(0.98);
+}
+
+.btn-acid-green {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: #AEDB00;
+  color: #111318;
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1;
+  border-radius: 6px;
+  padding: 10px 18px;
+  border: 1px solid #AEDB00;
+  cursor: pointer;
+  transition: opacity 0.15s ease, transform 0.1s ease;
+  white-space: nowrap;
+}
+.btn-acid-green:hover {
+  opacity: 0.92;
+}
+.btn-acid-green:active {
+  transform: scale(0.98);
+}
+
+.tag-brand-blue {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #ffffff;
+  background-color: #2A46C7;
+  padding: 4px 10px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.tag-acid-green {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #111318;
+  background-color: #AEDB00;
+  padding: 4px 10px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+}
+
+
 /* Crisp Clean Technical Tag (Zero Gradients, Zero Brackets) */
 .tech-label {
   font-family: var(--font-mono);
