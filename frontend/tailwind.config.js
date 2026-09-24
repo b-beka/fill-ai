@@ -15,7 +15,9 @@ export default {
         'grid': '#C7D6F2',
 
         /* Цвета бренда FILL */
-        'blue': '#2340E0',
+        'blue': '#2A46C7',
+        'graphite': '#111318',
+        'deep': '#0a0c10',
         'sky': '#BBD4FF',
         'sun': '#FFC72C',
         'sun-soft': '#FFE9A3',

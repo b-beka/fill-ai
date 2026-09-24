@@ -806,8 +806,164 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ onNavigate: _onNav
               </div>
             </div>
 
+            {/* Feature 5: Teacher Dashboard Preview (6 cols) */}
+            <div className="md:col-span-6 p-7 sm:p-8 rounded-2xl bg-[#1b202c] border border-white/10 flex flex-col gap-5 shadow-xl">
+              <div>
+                <div className="flex items-center gap-2 text-xs font-mono-tag text-[#7B98F5] mb-3">
+                  <Radio className="w-4 h-4 text-[#2A46C7]" />
+                  <span>КАБИНЕТ ПРЕПОДАВАТЕЛЯ</span>
+                </div>
+                <h3 className="text-xl font-display font-bold text-white">Эфир в реальном времени</h3>
+                <p className="text-xs text-white/60 mt-2 leading-relaxed">
+                  Управляйте потоком лекции, запускайте квизы голосом и следите за аудиторией.
+                </p>
+              </div>
+              <div className="rounded-xl bg-[#0f1420] border border-white/8 p-4 space-y-3">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-mono-tag text-white/40">АУДИТОРИЯ ОНЛАЙН</span>
+                  <span className="font-display font-bold text-white">30 / 30</span>
+                </div>
+                <div className="flex items-end gap-0.5 h-8">
+                  {[4,7,5,9,6,8,7,10,5,8,9,6,7,5,8,10,6,4,9,7,5,8,6,9,7,4,8,6,10,5].map((h, i) => (
+                    <div key={i} style={{ height: `${h * 10}%` }} className="flex-1 rounded-sm bg-[#AEDB00] opacity-70" />
+                  ))}
+                </div>
+                <div className="text-[10px] font-mono-tag text-white/30">МИК АКТИВЕН · SONIOX ASR</div>
+                <div className="pt-1 border-t border-white/8">
+                  <div className="text-[10px] font-mono-tag text-white/40 mb-2">ПОСЛЕДНИЙ КВИЗ · 28 ответов</div>
+                  <div className="flex gap-1 h-6 items-end">
+                    {[78, 12, 10].map((pct, i) => (
+                      <div key={i} className="flex flex-col items-center gap-0.5 flex-1">
+                        <div className="text-[8px] font-mono-tag text-white/40">{pct}%</div>
+                        <div style={{ height: `${Math.max(pct, 10)}%` }} className={`w-full rounded-sm ${i === 0 ? 'bg-[#AEDB00]' : 'bg-white/15'}`} />
+                        <div className="text-[8px] font-mono-tag text-white/30">{String.fromCharCode(65 + i)}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Feature 6: Student Notebook Preview (6 cols) */}
+            <div className="md:col-span-6 p-7 sm:p-8 rounded-2xl bg-[#1b202c] border border-[#AEDB00]/20 flex flex-col gap-5 shadow-xl">
+              <div>
+                <div className="flex items-center gap-2 text-xs font-mono-tag text-[#AEDB00] mb-3">
+                  <Sparkles className="w-4 h-4" />
+                  <span>ТЕТРАДЬ СТУДЕНТА</span>
+                </div>
+                <h3 className="text-xl font-display font-bold text-white">Живой конспект под пальцами</h3>
+                <p className="text-xs text-white/60 mt-2 leading-relaxed">
+                  Конспект формируется прямо во время речи лектора. Никаких задержек.
+                </p>
+              </div>
+              <div className="rounded-xl bg-[#0f1420] border border-white/8 p-4 space-y-3">
+                <div className="text-[10px] font-mono-tag text-[#AEDB00] flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#AEDB00] animate-pulse" />
+                  БИОФИЗИКА · УРОК 7 · LIVE
+                </div>
+                <div className="p-3 rounded-lg bg-white/4 border border-white/8 space-y-1.5">
+                  <div className="text-xs font-display font-bold text-white">§3. Мембранный потенциал покоя</div>
+                  <div className="text-[11px] text-white/70 leading-relaxed">
+                    Трансмембранная разность потенциалов в покое обусловлена неравномерным распределением ионов K⁺ и Na⁺.
+                  </div>
+                  <div className="py-1 overflow-x-auto text-white/90 text-xs">
+                    <MathFormula formula="E_m = -70 \text{ мВ}" />
+                  </div>
+                </div>
+                <div className="w-full py-2 rounded-lg bg-[#AEDB00]/15 border border-[#AEDB00]/30 text-xs font-mono-tag text-[#AEDB00] font-bold flex items-center justify-center gap-2">
+                  <Zap className="w-3.5 h-3.5" />
+                  Что я пропустил? — 7 мин.
+                </div>
+              </div>
+            </div>
+
           </div>
 
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* 4.5. AUDIENCE ROLE SELECTOR                                               */}
+      {/* ========================================================================= */}
+      <section id="audience" className="py-24 px-4 sm:px-8 border-b border-white/10 bg-[#090b10]">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <span className="tag-brand-blue mb-4">ДЛЯ КОГО ЭТО</span>
+            <h2 className="text-3xl sm:text-5xl font-display font-bold text-white tracking-tight mt-3">
+              Выберите вашу роль
+            </h2>
+            <p className="text-sm text-white/50 mt-4 max-w-[46ch] mx-auto leading-relaxed">
+              FILL AI адаптирует интерфейс и функционал под каждого участника учебного процесса.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Teacher role card */}
+            <button
+              onClick={() => onOpenAuth('login', 'teacher')}
+              className="group text-left p-8 rounded-2xl bg-[#111318] border-2 border-[#2A46C7]/40 hover:border-[#2A46C7] transition-all hover:bg-[#2A46C7]/8 shadow-xl"
+            >
+              <div className="text-4xl mb-5">🎓</div>
+              <div className="flex items-start justify-between gap-4 mb-4">
+                <div>
+                  <div className="font-mono-tag text-xs text-[#7B98F5] mb-1">РОЛЬ</div>
+                  <h3 className="text-2xl font-display font-bold text-white">Преподаватель</h3>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-[#2A46C7] flex items-center justify-center text-white flex-none mt-1 group-hover:scale-110 transition-transform">
+                  <ArrowRight className="w-5 h-5" />
+                </div>
+              </div>
+              <p className="text-sm text-white/60 mb-5 leading-relaxed">
+                Управляйте живым эфиром, запускайте квизы голосом и получайте аналитику вовлечённости.
+              </p>
+              <div className="space-y-2">
+                {['Управление эфиром и студией', 'Hands-Free квизы по голосу', 'Аналитика по темам урока', 'Экспорт Anki + WhatsApp-отчёт'].map((f) => (
+                  <div key={f} className="flex items-center gap-2 text-xs text-white/70">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#2A46C7] flex-none" />
+                    {f}
+                  </div>
+                ))}
+              </div>
+              <div className="mt-6 pt-4 border-t border-white/8">
+                <span className="inline-flex items-center gap-2 text-sm font-semibold text-[#2A46C7] group-hover:text-white transition-colors">
+                  Войти как преподаватель <ArrowRight className="w-4 h-4" />
+                </span>
+              </div>
+            </button>
+
+            {/* Student role card */}
+            <button
+              onClick={() => onOpenAuth('login', 'student')}
+              className="group text-left p-8 rounded-2xl bg-[#111318] border-2 border-[#AEDB00]/30 hover:border-[#AEDB00] transition-all hover:bg-[#AEDB00]/6 shadow-xl"
+            >
+              <div className="text-4xl mb-5">📚</div>
+              <div className="flex items-start justify-between gap-4 mb-4">
+                <div>
+                  <div className="font-mono-tag text-xs text-[#AEDB00] mb-1">РОЛЬ</div>
+                  <h3 className="text-2xl font-display font-bold text-white">Студент</h3>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-[#AEDB00] flex items-center justify-center text-[#111318] flex-none mt-1 group-hover:scale-110 transition-transform">
+                  <ArrowRight className="w-5 h-5" />
+                </div>
+              </div>
+              <p className="text-sm text-white/60 mb-5 leading-relaxed">
+                Получайте живой конспект с формулами, отвечайте на квизы и не теряйте нить при опоздании.
+              </p>
+              <div className="space-y-2">
+                {['Конспект в реальном времени', 'LaTeX формулы и слайды', 'Участие в квизах со смартфона', 'Кнопка «Что я пропустил?»'].map((f) => (
+                  <div key={f} className="flex items-center gap-2 text-xs text-white/70">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#AEDB00] flex-none" />
+                    {f}
+                  </div>
+                ))}
+              </div>
+              <div className="mt-6 pt-4 border-t border-white/8">
+                <span className="inline-flex items-center gap-2 text-sm font-semibold text-[#AEDB00] group-hover:text-white transition-colors">
+                  Войти как студент <ArrowRight className="w-4 h-4" />
+                </span>
+              </div>
+            </button>
+          </div>
         </div>
       </section>
 

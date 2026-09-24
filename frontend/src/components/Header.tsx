@@ -67,7 +67,8 @@ export const Header: React.FC<HeaderProps> = ({
           <nav className="hidden lg:flex items-center gap-6 text-xs font-medium text-white/70">
             <button onClick={() => handleNavClick('how-it-works')} className="hover:text-white transition-colors">Как это работает</button>
             <button onClick={() => handleNavClick('features')} className="hover:text-white transition-colors">Возможности</button>
-            <button onClick={() => handleNavClick('services')} className="hover:text-white transition-colors">Услуги и тарифы</button>
+            <button onClick={() => handleNavClick('audience')} className="hover:text-white transition-colors">Для кого</button>
+            <button onClick={() => handleNavClick('services')} className="hover:text-white transition-colors">Тарифы</button>
             <button onClick={() => handleNavClick('testimonials')} className="hover:text-white transition-colors">Отзывы</button>
             <button onClick={() => handleNavClick('faq')} className="hover:text-white transition-colors">FAQ</button>
           </nav>

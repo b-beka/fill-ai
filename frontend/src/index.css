@@ -14,46 +14,41 @@
 @tailwind utilities;
 
 /*
-  FILL AI — ДИЗАЙН-СИСТЕМА: «ТЕТРАДЬ · ЛИНЕЙКА · КРУГИ»
-  Нео-брутализм, тактильная бумага, чернильные контуры 2px, жесткие тени 4px/8px.
+  FILL AI — DESIGN SYSTEM
+  Colors: #2A46C7 Blue · #AEDB00 Acid Green · #111318 Graphite · #F5F2E8 Cream
 */
 
 :root {
-  --color-paper: #FBF7EA;
-  --color-paper-2: #F2ECD6;
-  --color-ink: #0E1A4B;
-  --color-grid: #C7D6F2;
-  --color-blue: #2340E0;
-  --color-sky: #BBD4FF;
-  --color-sun: #FFC72C;
-  --color-sun-soft: #FFE9A3;
-  --color-pen-red: #E5383B;
-  --color-stamp-green: #1F9D63;
-  --color-board: #0B1440;
-  --color-chalk: #F4F1E6;
+  --color-blue:       #2A46C7;
+  --color-green:      #AEDB00;
+  --color-graphite:   #111318;
+  --color-deep:       #0a0c10;
+  --color-cream:      #F5F2E8;
 
-  --shadow-hard: 4px 4px 0 0 var(--color-ink);
-  --shadow-hard-lg: 8px 8px 0 0 var(--color-ink);
-  --radius-card: 20px;
-  --radius-pill: 999px;
+  /* Legacy notebook tokens (still used in DevKit) */
+  --color-paper:      #FBF7EA;
+  --color-paper-2:    #F2ECD6;
+  --color-ink:        #0E1A4B;
+  --color-grid:       #C7D6F2;
+  --color-sky:        #BBD4FF;
+  --color-sun:        #FFC72C;
+  --color-sun-soft:   #FFE9A3;
+  --color-pen-red:    #E5383B;
+  --color-stamp-green:#1F9D63;
+  --color-board:      #0B1440;
+  --color-chalk:      #F4F1E6;
 
-  color-scheme: light;
-}
-
-[data-theme="board"] {
-  --color-paper: #0B1440;
-  --color-paper-2: #142055;
-  --color-ink: #F4F1E6;
-  --color-grid: #1D2D73;
-  --shadow-hard: 4px 4px 0 0 var(--color-chalk);
-  --shadow-hard-lg: 8px 8px 0 0 var(--color-chalk);
+  --shadow-hard:      4px 4px 0 0 var(--color-ink);
+  --shadow-hard-lg:   8px 8px 0 0 var(--color-ink);
+  --radius-card:      20px;
+  --radius-pill:      999px;
 
   color-scheme: dark;
 }
 
 html, body {
-  background-color: #FBF7EA;
-  color: #0E1A4B;
+  background-color: #111318;
+  color: white;
   font-family: 'Onest', -apple-system, sans-serif;
   margin: 0;
   padding: 0;
@@ -63,77 +58,156 @@ html, body {
   overflow-x: hidden;
 }
 
-[data-theme="board"] body {
-  background-color: #0B1440;
-  color: #F4F1E6;
-}
-
 html {
   scroll-behavior: smooth;
 }
 
-/* Typography Defaults */
+/* Typography */
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Unbounded', sans-serif;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
   font-weight: 700;
   color: inherit;
 }
 
 ::selection {
-  background: #FFC72C;
-  color: #0E1A4B;
+  background: #AEDB00;
+  color: #111318;
 }
 
 :focus-visible {
-  outline: 2px solid #0E1A4B;
+  outline: 2px solid #2A46C7;
   outline-offset: 2px;
 }
 
-/* Custom Fonts Classes */
-.font-heading {
-  font-family: 'Unbounded', sans-serif;
+/* ============================================================
+   FONT UTILITIES
+   ============================================================ */
+.font-display  { font-family: 'Unbounded', sans-serif; }
+.font-body     { font-family: 'Onest', sans-serif; }
+.font-hand     { font-family: 'Caveat', cursive; }
+.font-heading  { font-family: 'Unbounded', sans-serif; }
+
+.font-mono-tag {
+  font-family: 'SF Mono', 'Fira Code', ui-monospace, 'Courier New', monospace;
+  letter-spacing: 0.04em;
 }
 
-.font-body {
+/* ============================================================
+   BUTTON UTILITIES
+   ============================================================ */
+.btn-brand-blue {
+  background-color: #2A46C7;
+  color: white;
+  border-radius: 10px;
+  border: none;
   font-family: 'Onest', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s, transform 0.1s;
+}
+.btn-brand-blue:hover { background-color: #3451D8; }
+.btn-brand-blue:active { transform: scale(0.98); }
+
+.btn-solid {
+  background-color: #1b202c;
+  color: white;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.1);
+  font-family: 'Onest', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+.btn-solid:hover { border-color: rgba(255,255,255,0.25); background-color: #222838; }
+
+.btn-outline {
+  background-color: transparent;
+  color: white;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.2);
+  font-family: 'Onest', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+.btn-outline:hover {
+  border-color: rgba(255,255,255,0.5);
+  background-color: rgba(255,255,255,0.05);
 }
 
-.font-hand {
-  font-family: 'Caveat', cursive;
+/* ============================================================
+   TAG / LABEL UTILITIES
+   ============================================================ */
+.tag-brand-blue {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  background-color: rgba(42, 70, 199, 0.15);
+  border: 1px solid rgba(42, 70, 199, 0.4);
+  color: #7B98F5;
+  border-radius: 6px;
+  font-family: ui-monospace, 'Fira Code', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
-/* Tactile Neo-Brutalist Classes */
-.border-ink {
-  border: 2px solid var(--color-ink);
+.tag-acid-green {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  background-color: rgba(174, 219, 0, 0.12);
+  border: 1px solid rgba(174, 219, 0, 0.35);
+  color: #AEDB00;
+  border-radius: 6px;
+  font-family: ui-monospace, 'Fira Code', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
-.border-ink-thick {
-  border: 3px solid var(--color-ink);
+/* ============================================================
+   BACKGROUND PATTERNS
+   ============================================================ */
+.bg-academic-grid {
+  background-image:
+    linear-gradient(rgba(42, 70, 199, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(42, 70, 199, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
 }
 
-.shadow-hard {
-  box-shadow: 4px 4px 0 0 var(--color-ink);
+.bg-academic-dots {
+  background-image: radial-gradient(rgba(174, 219, 0, 0.12) 1px, transparent 1px);
+  background-size: 24px 24px;
 }
 
-.shadow-hard-lg {
-  box-shadow: 8px 8px 0 0 var(--color-ink);
-}
+/* ============================================================
+   LEGACY CLASSES (backward compat with DevKit/notebook UI)
+   ============================================================ */
+.border-ink       { border: 2px solid var(--color-ink); }
+.border-ink-thick { border: 3px solid var(--color-ink); }
+.shadow-hard      { box-shadow: 4px 4px 0 0 var(--color-ink); }
+.shadow-hard-lg   { box-shadow: 8px 8px 0 0 var(--color-ink); }
+.shadow-hard-sun  { box-shadow: 4px 4px 0 0 var(--color-sun); }
 
-.shadow-hard-sun {
-  box-shadow: 4px 4px 0 0 var(--color-sun);
-}
+.btn-press { transition: transform 0.12s cubic-bezier(0.76, 0, 0.24, 1), box-shadow 0.12s; }
+.btn-press:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 0 var(--color-ink); }
 
-/* Button Press Effect: 4px displacement into shadow */
-.btn-press {
-  transition: transform 0.12s cubic-bezier(0.76, 0, 0.24, 1), box-shadow 0.12s cubic-bezier(0.76, 0, 0.24, 1);
-}
-.btn-press:active {
-  transform: translate(3px, 3px);
-  box-shadow: 1px 1px 0 0 var(--color-ink);
-}
-
-/* Respect Reduced Motion */
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
 @media (prefers-reduced-motion: reduce) {
   *, ::before, ::after {
     animation-duration: 0.01ms !important;
