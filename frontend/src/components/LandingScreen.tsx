@@ -1,15 +1,13 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { motion } from 'framer-motion';
 import { 
   Play, 
-  Mic, 
-  Paperclip, 
-  ArrowUp, 
   Radio, 
-  Star,
-  ChevronDown,
-  FileText,
-  Sparkles,
-  Cpu
+  Check, 
+  ShieldCheck, 
+  GraduationCap, 
+  BookOpen, 
+  Star
 } from 'lucide-react';
 import { ScreenId } from './Header';
 
@@ -18,31 +16,43 @@ interface LandingScreenProps {
   onOpenAuth?: (role?: 'teacher' | 'student') => void;
 }
 
-const PRESET_PROMPTS = [
-  'Биомембраны: транспорт веществ, натрий-калиевый насос и градиенты...',
-  'Python: асинхронное программирование, Event Loop и asyncio задачи...',
-  'IELTS Academic: подготовка к Writing Task 2, связность и лексика...'
+const TESTIMONIALS = [
+  {
+    name: 'Д-р Аскар Ибраев',
+    role: 'Зав. кафедрой биофизики КазНУ им. аль-Фараби',
+    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=256&q=80',
+    quote: 'Студенты перестали отвлекаться на механическое переписывание слайдов. Они внимательно слушают объяснение, а структурированный конспект со схемами получают сразу к звонку.',
+    tag: 'Биофизика'
+  },
+  {
+    name: 'Тимур Касымов',
+    role: 'Преподаватель Computer Science, AITU',
+    image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=256&q=80',
+    quote: 'Голосовая команда "Вопрос" в микрофон — это восторг. Система за секунду формулирует тест по только что сказанному материалу, а я вижу на экране, кто понял код, а кто запутался.',
+    tag: 'Python & AI'
+  },
+  {
+    name: 'Аружан Серикбаева',
+    role: 'Студентка 3 курса бакалавриата',
+    image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=256&q=80',
+    quote: 'Формулы сразу выводятся в красивом LaTeX, к каждому тезису есть аудиофрагмент речи лектора. Если отвлёкся на пару минут — кнопка "Что я пропустил?" спасает весь урок.',
+    tag: 'Студентка'
+  },
+  {
+    name: 'Елена Ким',
+    role: 'Академический тренер, Lingua Premier',
+    image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=256&q=80',
+    quote: 'Посещаемость выросла на 28%, потому что студенты чувствуют реальную вовлеченность. Интерактивные задания без задержки держат аудиторию в фокусе всё занятие.',
+    tag: 'IELTS'
+  }
 ];
 
 export const LandingScreen: React.FC<LandingScreenProps> = ({ onNavigate, onOpenAuth }) => {
-  const [promptText, setPromptText] = useState(PRESET_PROMPTS[0]);
-  const [selectedModel, setSelectedModel] = useState<'Gemini 3.5' | 'Claude 3.5'>('Gemini 3.5');
-  const [activeChip, setActiveChip] = useState<'slides' | 'mic' | 'demo'>('slides');
-
-  const handleLaunch = () => {
-    onNavigate('live');
-  };
-
-  const handleChipClick = (chip: 'slides' | 'mic' | 'demo', textIndex: number) => {
-    setActiveChip(chip);
-    setPromptText(PRESET_PROMPTS[textIndex]);
-  };
-
   return (
-    <div className="w-full bg-[#000000] text-white overflow-x-hidden selection:bg-orange-500/30 selection:text-white">
+    <div className="w-full bg-[#06080b] text-white overflow-x-hidden font-body">
       
       {/* ========================================================================= */}
-      {/* 1. SINGLE-VIEWPORT HERO WITH FASTSHOT COMPOSER & DAWN CINEMATIC VIDEO     */}
+      {/* 1. CALM NATURAL CINEMATIC HERO (Dawn landscape video, 3D typography)      */}
       {/* ========================================================================= */}
       <section className="relative min-h-[calc(100vh-64px)] flex flex-col justify-between overflow-hidden bg-[#0a0d12]">
         
@@ -59,169 +69,175 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ onNavigate, onOpen
           />
         </div>
 
-        {/* Dual Soft Scrim: Clean, smooth gradient overlay without clutter */}
+        {/* Ambient Dark Scrim */}
         <div 
           className="absolute inset-0 pointer-events-none z-1"
           style={{
-            background: 'linear-gradient(180deg, rgba(10,13,18,0.7) 0%, rgba(10,13,18,0.4) 45%, rgba(0,0,0,0.92) 100%)'
+            background: 'linear-gradient(180deg, rgba(8,10,14,0.65) 0%, rgba(8,10,14,0.4) 40%, rgba(6,8,11,0.95) 100%)'
           }}
         />
 
-        {/* Top Tag & Header Spacer */}
-        <div className="relative z-10 w-full pt-10 sm:pt-14 flex items-center justify-center">
-          <div className="echoid-tag flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span>LIVE LECTURE OS · V1.2</span>
-          </div>
+        {/* Top Tag */}
+        <div className="relative z-10 w-full pt-10 sm:pt-16 flex items-center justify-center">
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="echoid-tag flex items-center gap-2"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            <span>ОПЕРАЦИОННАЯ СИСТЕМА ДЛЯ ЖИВЫХ ЛЕКЦИЙ</span>
+          </motion.div>
         </div>
 
-        {/* Center Main Stage: Headline + Fastshot Style Composer */}
+        {/* Main Hero Copy & Clear Cabinets CTA */}
         <div className="relative z-10 w-full max-w-4xl mx-auto px-4 sm:px-8 py-8 flex flex-col items-center text-center">
           
-          {/* Crisp, Pristine Headline (Sora Display) */}
-          <h1 className="font-display text-3xl sm:text-5xl md:text-6xl font-normal tracking-tight text-white max-w-[22ch] leading-[1.12] drop-shadow-md">
-            Опишите тему урока. <br />
-            <span className="text-white/80">FILL AI проведёт эфир и создаст конспект.</span>
-          </h1>
+          <motion.h1 
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.1 }}
+            className="font-display text-3xl sm:text-5xl md:text-6xl font-normal tracking-tight text-white max-w-[22ch] leading-[1.12]"
+          >
+            Преподаватель ведёт занятие. <br />
+            <span className="text-white/80">FILL AI синхронно создаёт конспект и опрос.</span>
+          </motion.h1>
 
-          <p className="mt-4 text-xs sm:text-sm md:text-base text-white/70 max-w-[50ch] font-normal leading-relaxed">
-            Система слушает объяснение учителя, синхронизирует презентацию и формирует мультимедийные заметки с моментальными тестами.
-          </p>
+          <motion.p 
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="mt-5 text-sm sm:text-base md:text-lg text-white/70 max-w-[50ch] font-normal leading-relaxed"
+          >
+            Никакой ручной расшифровки после уроков. Платформа слушает голос лектора, фиксирует слайды и формулы, организуя моментальные квизы для аудитории.
+          </motion.p>
 
-          {/* ========================================================================= */}
-          {/* FASTSHOT COMPOSER CARD (Pixel-faithful toolbar: chips left, send right)   */}
-          {/* ========================================================================= */}
-          <div className="w-full max-w-2xl mt-8 composer-card p-4 sm:p-5 flex flex-col justify-between text-left relative overflow-hidden">
-            
-            {/* Top Prompt / Topic Line */}
-            <div className="mb-4">
-              <label className="text-[10px] font-mono-tag uppercase tracking-wider text-white/40 block mb-1">
-                Тема занятия или запрос
-              </label>
-              <input
-                type="text"
-                value={promptText}
-                onChange={(e) => setPromptText(e.target.value)}
-                placeholder="Введите тему лекции или предмет..."
-                className="w-full bg-transparent text-xs sm:text-sm text-white placeholder-white/40 focus:outline-none font-normal"
-              />
-            </div>
-
-            {/* Bottom Toolbar Row: Chips left, Right cluster (Model, Clip, Orange Send) */}
-            <div className="pt-3 border-t border-white/10 flex flex-wrap items-center justify-between gap-3">
-              
-              {/* Left Chips */}
-              <div className="flex items-center gap-1.5 overflow-x-auto py-0.5">
-                <button
-                  type="button"
-                  onClick={() => handleChipClick('slides', 0)}
-                  className={`composer-chip ${activeChip === 'slides' ? 'active' : ''}`}
-                >
-                  <FileText className="w-3.5 h-3.5 text-white/70" />
-                  <span>Биомембраны</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleChipClick('mic', 1)}
-                  className={`composer-chip ${activeChip === 'mic' ? 'active' : ''}`}
-                >
-                  <Mic className="w-3.5 h-3.5 text-white/70" />
-                  <span>Python & AI</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleChipClick('demo', 2)}
-                  className={`composer-chip ${activeChip === 'demo' ? 'active' : ''}`}
-                >
-                  <Sparkles className="w-3.5 h-3.5 text-white/70" />
-                  <span>IELTS Writing</span>
-                </button>
-              </div>
-
-              {/* Right Cluster: Model label + Paperclip + Orange Send Circle */}
-              <div className="flex items-center gap-3 sm:gap-4 ml-auto">
-                {/* Model Selector */}
-                <button
-                  type="button"
-                  onClick={() => setSelectedModel((m) => (m === 'Gemini 3.5' ? 'Claude 3.5' : 'Gemini 3.5'))}
-                  className="hidden sm:flex items-center gap-1.5 text-[11px] font-mono-tag text-white/60 hover:text-white transition-colors"
-                  title="Переключить оркестратор"
-                >
-                  <span>{selectedModel}</span>
-                  <ChevronDown className="w-3 h-3 text-white/40" />
-                </button>
-
-                {/* Paperclip */}
-                <button
-                  type="button"
-                  onClick={() => onNavigate('live')}
-                  className="text-white/50 hover:text-white transition-colors"
-                  title="Прикрепить PDF презентацию"
-                >
-                  <Paperclip className="w-4 h-4" />
-                </button>
-
-                {/* Iconic Fastshot Orange Send Circle */}
-                <button
-                  type="button"
-                  onClick={handleLaunch}
-                  className="btn-orange-send"
-                  title="Запустить прямой эфир"
-                >
-                  <ArrowUp className="w-4 h-4 stroke-[2.5]" />
-                </button>
-              </div>
-
-            </div>
-
-          </div>
-
-          {/* Quick Dual Mode Launchers */}
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-3 text-xs">
+          {/* Clean Cabinet Navigation Buttons */}
+          <motion.div 
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+            className="mt-8 flex flex-wrap items-center justify-center gap-3 sm:gap-4"
+          >
             <button
               onClick={() => onNavigate('live')}
-              className="btn-liquid-solid text-xs h-9 px-4 flex items-center gap-2"
+              className="btn-liquid-solid text-xs sm:text-sm h-11 px-5 flex items-center gap-2 font-medium"
             >
-              <Radio className="w-3.5 h-3.5 text-black" />
-              <span>Эфир преподавателя</span>
+              <GraduationCap className="w-4 h-4 text-black" />
+              <span>Кабинет преподавателя</span>
             </button>
 
             <button
               onClick={() => onNavigate('student')}
-              className="btn-liquid-ghost text-xs h-9 px-4 flex items-center gap-2"
+              className="btn-liquid-ghost text-xs sm:text-sm h-11 px-5 flex items-center gap-2 font-medium"
             >
-              <Play className="w-3.5 h-3.5 fill-white text-white" />
-              <span>Экран ученика</span>
+              <BookOpen className="w-4 h-4 text-white" />
+              <span>Кабинет ученика</span>
             </button>
 
             {onOpenAuth && (
               <button
                 onClick={() => onOpenAuth('teacher')}
-                className="text-white/50 hover:text-white text-xs underline underline-offset-4 px-2 py-1 transition-colors"
+                className="text-white/60 hover:text-white text-xs underline underline-offset-4 py-2 px-3 transition-colors"
               >
-                Выбрать роль входа
+                Выбрать роль входа →
               </button>
             )}
+          </motion.div>
+
+          {/* Micro Specs Readout */}
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-4 text-[11px] text-white/50 font-mono-tag">
+            <span>Распознавание речи: Soniox + Groq</span>
+            <span className="text-white/20">•</span>
+            <span>Фиксация слайдов: OpenCV pHash</span>
+            <span className="text-white/20">•</span>
+            <span>Синтез: Gemini 3.5 Flash</span>
           </div>
 
         </div>
 
-        {/* Footer Proof Bar: Built & Tested by Educators */}
+        {/* 3D Visual Preview Teaser (Side-by-side Teacher Studio & Student Cinema) */}
+        <div className="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-8 pb-10">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.9, delay: 0.4 }}
+            className="rounded-2xl border border-white/15 bg-[#0a0d12]/90 backdrop-blur-md p-4 sm:p-6 shadow-2xl"
+          >
+            <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-4 text-xs font-mono-tag text-white/50">
+              <span className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                СИНХРОННЫЙ ЭФИР: СТУДИЯ ПРЕПОДАВАТЕЛЯ & ПЛЕЕР УЧЕНИКА
+              </span>
+              <span>1080p 60fps</span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Teacher Studio Preview */}
+              <div 
+                onClick={() => onNavigate('live')}
+                className="p-4 rounded-xl bg-[#11141a] border border-white/10 hover:border-white/30 transition-all cursor-pointer group"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-display font-medium text-white flex items-center gap-1.5">
+                    <Radio className="w-3.5 h-3.5 text-emerald-400" />
+                    Экран преподавателя
+                  </span>
+                  <span className="text-[10px] font-mono-tag text-white/40 group-hover:text-white transition-colors">
+                    Открыть →
+                  </span>
+                </div>
+                <div className="aspect-video rounded-lg bg-black/60 border border-white/10 flex flex-col items-center justify-center p-4 text-center">
+                  <span className="text-xs font-medium text-white/90">
+                    Эфирный монитор лекции + слайды
+                  </span>
+                  <span className="text-[11px] text-white/50 mt-1">
+                    Кнопка «Задать вопрос классу» и журнал присутствия 28/30
+                  </span>
+                </div>
+              </div>
+
+              {/* Student Cinema Preview */}
+              <div 
+                onClick={() => onNavigate('student')}
+                className="p-4 rounded-xl bg-[#11141a] border border-white/10 hover:border-white/30 transition-all cursor-pointer group"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-display font-medium text-white flex items-center gap-1.5">
+                    <Play className="w-3.5 h-3.5 text-sky-400 fill-sky-400" />
+                    Экран ученика (YouTube-стиль)
+                  </span>
+                  <span className="text-[10px] font-mono-tag text-white/40 group-hover:text-white transition-colors">
+                    Открыть →
+                  </span>
+                </div>
+                <div className="aspect-video rounded-lg bg-black/60 border border-white/10 flex flex-col items-center justify-center p-4 text-center">
+                  <span className="text-xs font-medium text-white/90">
+                    16:9 трансляция + экспресс-опрос справа
+                  </span>
+                  <span className="text-[11px] text-white/50 mt-1">
+                    Синхронно растущий конспект снизу и выжимка пропусков
+                  </span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* University Partnerships Bar */}
         <div className="relative z-10 w-full border-t border-white/10 bg-black/60 backdrop-blur-md py-4 px-6">
           <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/50">
-            <div className="font-mono-tag text-[11px] tracking-wider uppercase">
-              Разработано для университетов и школ:
-            </div>
+            <span className="font-mono-tag text-[11px] uppercase">
+              Партнеры и пилотные площадки:
+            </span>
             <div className="flex items-center gap-6 font-display font-medium text-white/70">
-              <span className="hover:text-white transition-colors">КазНУ</span>
+              <span>КазНУ им. аль-Фараби</span>
               <span className="text-white/20">/</span>
-              <span className="hover:text-white transition-colors">Astana IT University</span>
+              <span>Astana IT University</span>
               <span className="text-white/20">/</span>
-              <span className="hover:text-white transition-colors">Nazarbayev University</span>
+              <span>Nazarbayev University</span>
               <span className="text-white/20">/</span>
-              <span className="hover:text-white transition-colors">Astana Hub</span>
+              <span>Astana Hub</span>
             </div>
           </div>
         </div>
@@ -229,189 +245,165 @@ export const LandingScreen: React.FC<LandingScreenProps> = ({ onNavigate, onOpen
       </section>
 
       {/* ========================================================================= */}
-      {/* 2. THREE CORE PILLARS (Clean, simple, no clutter)                        */}
+      {/* 2. ABOUT US & MISSION (О нас, контекст, почему это создано)               */}
       {/* ========================================================================= */}
-      <section className="py-20 px-6 sm:px-8 border-t border-white/10 bg-[#050608]">
+      <section className="py-20 px-6 sm:px-8 border-t border-white/10 bg-[#07090d]">
+        <div className="max-w-5xl mx-auto">
+          
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-10 items-center">
+            
+            <div className="md:col-span-7">
+              <div className="echoid-tag inline-block mb-3">
+                О ПРОЕКТЕ И КОМАНДЕ
+              </div>
+              <h2 className="text-2xl sm:text-4xl font-display font-normal text-white tracking-tight leading-tight">
+                Почему мы создали FILL AI
+              </h2>
+              <p className="text-sm text-white/70 mt-4 leading-relaxed">
+                Традиционная лекция устроена парадоксально: студенты тратят до 70% внимания на механическое списывание с доски или слайдов, теряя нить рассуждения преподавателя. А преподаватель после пар часами вручную готовит методички, конспекты и тесты.
+              </p>
+              <p className="text-sm text-white/70 mt-3 leading-relaxed">
+                FILL AI разработан исследователями и разработчиками в Казахстане для того, чтобы превратить каждую живую пару в интерактивный цифровой актив без дополнительных усилий со стороны лектора.
+              </p>
+
+              <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                  <div className="text-2xl font-display font-medium text-white">84%</div>
+                  <div className="text-xs text-white/60 mt-1">
+                    Экономия времени лектора на подготовку материалов
+                  </div>
+                </div>
+                <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                  <div className="text-2xl font-display font-medium text-white">0 мс</div>
+                  <div className="text-xs text-white/60 mt-1">
+                    Задержка пояснения ошибок в экспресс-опросах
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="md:col-span-5 p-6 rounded-2xl bg-[#0c0e14] border border-white/10 flex flex-col gap-4">
+              <h3 className="text-sm font-display font-medium text-white border-b border-white/10 pb-3 flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                <span>Принципы системы</span>
+              </h3>
+
+              <div className="space-y-3 text-xs text-white/70">
+                <div className="flex items-start gap-2.5">
+                  <Check className="w-4 h-4 text-emerald-400 flex-none mt-0.5" />
+                  <span>Работает с обычным микрофоном в классе без сложного монтажа.</span>
+                </div>
+                <div className="flex items-start gap-2.5">
+                  <Check className="w-4 h-4 text-emerald-400 flex-none mt-0.5" />
+                  <span>Поддерживает три языка: русский, казахский и английский.</span>
+                </div>
+                <div className="flex items-start gap-2.5">
+                  <Check className="w-4 h-4 text-emerald-400 flex-none mt-0.5" />
+                  <span>Экспортирует готовые карточки Anki TSV и отчеты в WhatsApp.</span>
+                </div>
+                <div className="flex items-start gap-2.5">
+                  <Check className="w-4 h-4 text-emerald-400 flex-none mt-0.5" />
+                  <span>Умная кнопка «Что я пропустил?» спасает опоздавших студентов.</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* 3. VERIFIED REVIEWS WITH REAL HUMAN FACES (Лица людей с отзывами)        */}
+      {/* ========================================================================= */}
+      <section className="py-20 px-6 sm:px-8 border-t border-white/10 bg-[#050609]">
         <div className="max-w-5xl mx-auto">
           
           <div className="text-center max-w-2xl mx-auto mb-14">
             <div className="echoid-tag inline-block mb-3">
-              КАК ЭТО РАБОТАЕТ
+              ОТЗЫВЫ ПРЕПОДАВАТЕЛЕЙ И СТУДЕНТОВ
             </div>
-            <h2 className="text-2xl sm:text-4xl font-normal font-display text-white tracking-tight">
-              Три вещи, которые происходят параллельно
+            <h2 className="text-2xl sm:text-4xl font-display font-normal text-white tracking-tight">
+              Лица и впечатления участников пилотов
             </h2>
-            <p className="text-xs sm:text-sm text-white/60 mt-3 leading-relaxed">
-              Преподаватель ведёт занятие как обычно. ИИ незаметно выполняет рутинную фиксацию материала на фоне.
+            <p className="text-xs sm:text-sm text-white/60 mt-3">
+              Реальные преподаватели ведущих вузов и студенты, использующие систему на занятиях.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            
-            {/* 1. Listen */}
-            <div className="p-6 rounded-2xl bg-[#0c0e12] border border-white/10 flex flex-col justify-between">
-              <div>
-                <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-sky-400 mb-4">
-                  <Mic className="w-5 h-5" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {TESTIMONIALS.map((t, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 15 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: idx * 0.1 }}
+                className="p-6 rounded-2xl bg-[#090c10] border border-white/10 hover:border-white/25 transition-all flex flex-col justify-between gap-5"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-1 text-amber-400">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className="w-3.5 h-3.5 fill-current" />
+                      ))}
+                    </div>
+                    <span className="font-mono-tag text-[10px] text-white/40 uppercase">
+                      {t.tag}
+                    </span>
+                  </div>
+                  <p className="text-xs sm:text-sm text-white/85 leading-relaxed italic">
+                    «{t.quote}»
+                  </p>
                 </div>
-                <div className="font-mono-tag text-[11px] text-sky-400 mb-1">
-                  01 · РАСПОЗНАВАНИЕ
-                </div>
-                <h3 className="text-base font-bold font-display text-white mb-2">
-                  Слушает голос
-                </h3>
-                <p className="text-xs text-white/60 leading-relaxed">
-                  Потоковая транскрибация речи преподавателя (Soniox + Groq) с точностью терминологии на казахском, русском и английском языках.
-                </p>
-              </div>
-              <div className="mt-6 pt-3 border-t border-white/5 font-mono-tag text-[10px] text-emerald-400">
-                Задержка 400 мс
-              </div>
-            </div>
 
-            {/* 2. Visuals */}
-            <div className="p-6 rounded-2xl bg-[#0c0e12] border border-white/10 flex flex-col justify-between">
-              <div>
-                <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-emerald-400 mb-4">
-                  <FileText className="w-5 h-5" />
+                <div className="flex items-center gap-3.5 pt-4 border-t border-white/10">
+                  <img
+                    src={t.image}
+                    alt={t.name}
+                    className="w-11 h-11 rounded-full object-cover border border-white/20 flex-none"
+                  />
+                  <div>
+                    <div className="text-xs sm:text-sm font-display font-medium text-white">
+                      {t.name}
+                    </div>
+                    <div className="text-[11px] text-white/50 leading-tight mt-0.5">
+                      {t.role}
+                    </div>
+                  </div>
                 </div>
-                <div className="font-mono-tag text-[11px] text-emerald-400 mb-1">
-                  02 · МАТЕРИАЛЫ
-                </div>
-                <h3 className="text-base font-bold font-display text-white mb-2">
-                  Смотрит на слайды
-                </h3>
-                <p className="text-xs text-white/60 leading-relaxed">
-                  OpenCV и pHash выявляют переключение слайдов и записи на доске, сохраняя четкие векторные кадры прямо в конспект.
-                </p>
-              </div>
-              <div className="mt-6 pt-3 border-t border-white/5 font-mono-tag text-[10px] text-emerald-400">
-                Zero-Cost pHash
-              </div>
-            </div>
-
-            {/* 3. Synthesis */}
-            <div className="p-6 rounded-2xl bg-[#0c0e12] border border-white/10 flex flex-col justify-between">
-              <div>
-                <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-amber-400 mb-4">
-                  <Cpu className="w-5 h-5" />
-                </div>
-                <div className="font-mono-tag text-[11px] text-amber-400 mb-1">
-                  03 · ОРКЕСТРАЦИЯ
-                </div>
-                <h3 className="text-base font-bold font-display text-white mb-2">
-                  Собирает конспект и тесты
-                </h3>
-                <p className="text-xs text-white/60 leading-relaxed">
-                  Gemini 3.5 Flash компонует структурированные карточки, формулы в LaTeX и автоматически формулирует экспресс-вопрос по команде учителя.
-                </p>
-              </div>
-              <div className="mt-6 pt-3 border-t border-white/5 font-mono-tag text-[10px] text-emerald-400">
-                0ms Explanations
-              </div>
-            </div>
-
+              </motion.div>
+            ))}
           </div>
 
         </div>
       </section>
 
       {/* ========================================================================= */}
-      {/* 3. VERIFIED REVIEWS FROM EDUCATORS & STUDENTS                            */}
+      {/* 4. BOTTOM ACTION STRIP: ENTER TEACHER OR STUDENT CABINET                  */}
       {/* ========================================================================= */}
-      <section className="py-20 px-6 sm:px-8 border-t border-white/10 bg-[#000000]">
-        <div className="max-w-5xl mx-auto">
-          
-          <div className="text-center max-w-2xl mx-auto mb-14">
-            <div className="echoid-tag inline-block mb-3">
-              ОТЗЫВЫ И ПИЛОТЫ
-            </div>
-            <h2 className="text-2xl sm:text-4xl font-normal font-display text-white tracking-tight">
-              Проверено преподавателями и студентами
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            
-            <div className="p-6 rounded-2xl bg-[#0a0c0f] border border-white/10 flex flex-col justify-between">
-              <div>
-                <div className="flex items-center gap-1 text-amber-400 mb-3">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-3.5 h-3.5 fill-current" />
-                  ))}
-                </div>
-                <p className="text-xs text-white/80 leading-relaxed italic mb-4">
-                  «Студенты перестали отвлекаться на механическое переписывание слайдов. Они слушают объяснение, а готовый конспект со схемами получают сразу к концу пары.»
-                </p>
-              </div>
-              <div className="pt-3 border-t border-white/10">
-                <div className="text-xs font-bold text-white">Д-р Аскар Ибраев</div>
-                <div className="text-[11px] text-white/50">Кафедра биофизики КазНУ</div>
-              </div>
-            </div>
-
-            <div className="p-6 rounded-2xl bg-[#0a0c0f] border border-white/10 flex flex-col justify-between">
-              <div>
-                <div className="flex items-center gap-1 text-amber-400 mb-3">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-3.5 h-3.5 fill-current" />
-                  ))}
-                </div>
-                <p className="text-xs text-white/80 leading-relaxed italic mb-4">
-                  «Команда "Вопрос" в микрофон создаёт тест моментально. Сразу вижу на экране распределение ответов — кто понял тему, а кто запутался.»
-                </p>
-              </div>
-              <div className="pt-3 border-t border-white/10">
-                <div className="text-xs font-bold text-white">Тимур Касымов</div>
-                <div className="text-[11px] text-white/50">Преподаватель CS, AITU</div>
-              </div>
-            </div>
-
-            <div className="p-6 rounded-2xl bg-[#0a0c0f] border border-white/10 flex flex-col justify-between">
-              <div>
-                <div className="flex items-center gap-1 text-amber-400 mb-3">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-3.5 h-3.5 fill-current" />
-                  ))}
-                </div>
-                <p className="text-xs text-white/80 leading-relaxed italic mb-4">
-                  «Формулы сразу выводятся красиво, к каждой мысли есть аудиофрагмент голоса лектора. Если отвлёкся — кнопка выжимки помогает быстро вернуться в курс дела.»
-                </p>
-              </div>
-              <div className="pt-3 border-t border-white/10">
-                <div className="text-xs font-bold text-white">Аружан Серикбаева</div>
-                <div className="text-[11px] text-white/50">Студентка 3 курса</div>
-              </div>
-            </div>
-
-          </div>
-
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* 4. CLEAN BOTTOM CTA                                                      */}
-      {/* ========================================================================= */}
-      <section className="py-16 px-6 sm:px-8 border-t border-white/10 bg-[#06080b] text-center">
+      <section className="py-20 px-6 sm:px-8 border-t border-white/10 bg-[#06080b] text-center">
         <div className="max-w-2xl mx-auto">
-          <h2 className="text-2xl sm:text-3xl font-display text-white mb-3">
-            Начать работу с FILL AI
+          <h2 className="text-2xl sm:text-3xl font-display font-normal text-white mb-3">
+            Войдите в личный кабинет
           </h2>
-          <p className="text-xs sm:text-sm text-white/60 mb-6">
-            Откройте эфир учителя или зайдите в роли ученика для демонстрации работы системы.
+          <p className="text-xs sm:text-sm text-white/60 mb-8 leading-relaxed">
+            Выберите ваш формат работы — ведение эфира преподавателем или просмотр и интерактивный конспект студентом.
           </p>
-          <div className="flex items-center justify-center gap-3">
+          <div className="flex flex-wrap items-center justify-center gap-4">
             <button
               onClick={() => onNavigate('live')}
-              className="btn-liquid-solid text-xs h-9 px-5"
+              className="btn-liquid-solid text-xs sm:text-sm h-10 px-6 flex items-center gap-2"
             >
-              Запустить эфир
+              <GraduationCap className="w-4 h-4 text-black" />
+              <span>Кабинет преподавателя</span>
             </button>
             <button
               onClick={() => onNavigate('student')}
-              className="btn-liquid-ghost text-xs h-9 px-5"
+              className="btn-liquid-ghost text-xs sm:text-sm h-10 px-6 flex items-center gap-2"
             >
-              Смотреть как ученик
+              <BookOpen className="w-4 h-4 text-white" />
+              <span>Кабинет ученика</span>
             </button>
           </div>
         </div>

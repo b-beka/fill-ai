@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import confetti from 'canvas-confetti';
 import { 
   Play, 
   Pause, 
@@ -10,6 +11,7 @@ import {
   AlertCircle, 
   Send, 
   Clock, 
+  FileText,
   X
 } from 'lucide-react';
 import { ALL_TRACKS, CurriculumTrack } from '../services/mockData';
@@ -28,9 +30,16 @@ export const StudentScreen: React.FC = () => {
   // Only approved blocks are shown to students
   const visibleBlocks = currentTrack.blocks.filter((b) => b.status === 'approved');
 
-  const handleSelectOption = (id: string) => {
+  const handleSelectOption = (id: string, isCorrect: boolean) => {
     setSelectedOptionId(id);
     setIsAnswered(true);
+    if (isCorrect) {
+      confetti({
+        particleCount: 50,
+        spread: 60,
+        origin: { y: 0.7 }
+      });
+    }
   };
 
   const handleTrackChange = (track: CurriculumTrack) => {
@@ -51,12 +60,12 @@ export const StudentScreen: React.FC = () => {
   );
 
   return (
-    <div className="w-full bg-[#000000] text-white min-h-[calc(100vh-64px)] pb-16 font-body">
+    <div className="w-full bg-[#06080b] text-white min-h-[calc(100vh-64px)] pb-16 font-body">
       
       {/* ========================================================================= */}
       {/* 1. TOP HEADER: STREAM TITLE, DISCIPLINE & CATCHUP BUTTON                  */}
       {/* ========================================================================= */}
-      <div className="border-b border-white/10 bg-[#080a0d] sticky top-[64px] z-30 px-4 sm:px-8 py-3">
+      <div className="border-b border-white/10 bg-[#080a0e] sticky top-[64px] z-30 px-4 sm:px-8 py-3">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           
           <div className="flex items-center gap-3">
@@ -202,7 +211,7 @@ export const StudentScreen: React.FC = () => {
                   return (
                     <button
                       key={opt.id}
-                      onClick={() => handleSelectOption(opt.id)}
+                      onClick={() => handleSelectOption(opt.id, opt.is_correct)}
                       disabled={isAnswered}
                       className={`w-full text-left p-3 rounded-xl border text-xs font-medium transition-all flex items-start gap-2.5 ${
                         isChosen
@@ -288,8 +297,9 @@ export const StudentScreen: React.FC = () => {
           
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-base sm:text-xl font-display font-medium text-white">
-                Конспект урока в реальном времени
+              <h2 className="text-base sm:text-xl font-display font-medium text-white flex items-center gap-2">
+                <FileText className="w-4 h-4 text-sky-400" />
+                <span>Конспект урока в реальном времени</span>
               </h2>
               <p className="text-xs text-white/50 mt-0.5">
                 Ключевые мысли, формулы и слайды появляются синхронно с речью преподавателя
